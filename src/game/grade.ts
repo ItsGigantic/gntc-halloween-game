@@ -11,9 +11,9 @@ export class PostGrade {
   private quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   readonly material: THREE.ShaderMaterial;
 
-  constructor(width: number, height: number) {
+  constructor(width: number, height: number, samples = 2) {
     this.target = new THREE.WebGLRenderTarget(width, height, {
-      samples: 2, // 2x MSAA is plenty for flat-shaded low-poly and halves the resolve cost of 4x
+      samples, // 2x MSAA is plenty for flat-shaded low-poly; 0 on the low tier
       depthBuffer: true,
       stencilBuffer: false,
     });

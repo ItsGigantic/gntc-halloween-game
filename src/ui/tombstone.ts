@@ -13,7 +13,6 @@ export interface TombstoneOpts {
 const W = 1080;
 const H = 1350;
 const SANS = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-const ORANGE = '#ff7602';
 
 /**
  * Share card, 1080x1350. The rendered tombstone is the whole card: every number is carved
@@ -39,17 +38,13 @@ export async function renderTombstone(o: TombstoneOpts): Promise<HTMLCanvasEleme
   ctx.fillStyle = bot;
   ctx.fillRect(0, H - 190, W, 190);
 
-  // Header: logo + title, left.
+  // Header: the Gigantic wordmark alone, top left.
   const margin = 56;
   const hy = 68;
   if (o.logo) {
-    const lh = 56;
+    const lh = 34;
     const lw = lh * (o.logo.naturalWidth / Math.max(1, o.logo.naturalHeight));
     ctx.drawImage(o.logo, margin, hy - lh / 2, lw, lh);
-    ctx.textAlign = 'left';
-    ctx.font = `600 28px ${SANS}`;
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.fillText('Gigantic Gourd', margin + lw + 14, hy);
   }
 
   // Footer: the call to action.
@@ -62,10 +57,5 @@ export async function renderTombstone(o: TombstoneOpts): Promise<HTMLCanvasEleme
   ctx.font = `700 34px ${SANS}`;
   ctx.fillStyle = '#ffffff';
   ctx.fillText(label, W / 2, fy + 4);
-  const uw = ctx.measureText(label).width;
-  ctx.fillStyle = ORANGE;
-  ctx.beginPath();
-  ctx.arc(W / 2 + uw / 2 + 16, fy + 12, 6, 0, Math.PI * 2);
-  ctx.fill();
   return c;
 }

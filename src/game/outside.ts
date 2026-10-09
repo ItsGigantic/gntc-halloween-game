@@ -101,7 +101,7 @@ export function buildOutside(parent: THREE.Object3D, rng: Rng): void {
   };
   const trees = ['tree_pine_orange_large', 'tree_pine_yellow_large', 'tree_pine_orange_medium', 'tree_pine_yellow_medium', 'tree_dead_large', 'tree_dead_medium', 'leafy_tree_a', 'leafy_tree_b', 'leafy_tree_c', 'bare_tree_c', 'bare_tree_d'];
   // Dense ring just past the fence, thinning with distance.
-  for (let i = 0; i < 440; i++) {
+  for (let i = 0; i < 300; i++) { // instanced trees are never culled per instance, so fewer is cheaper every frame
     const a = rng.range(0, Math.PI * 2);
     const r = half + 5 + Math.pow(rng.next(), 1.7) * 150;
     const x = Math.cos(a) * r, z = Math.sin(a) * r;

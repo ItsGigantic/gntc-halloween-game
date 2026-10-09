@@ -31,12 +31,20 @@ const BASE = import.meta.env.BASE_URL;
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ui = document.getElementById('ui') as HTMLDivElement;
 
-// 'default' power preference: on dual-GPU laptops 'high-performance' wakes the discrete GPU and the fans for a game that doesn't need it.
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_TOUCH, alpha: true, powerPreference: 'default' });
+// Rendering tiers. The GPU work per frame is what spins laptop fans up, so the default tier keeps
+// resolution, anti-aliasing, dynamic lights and the shadow pass modest; `?quality=high` restores
+// everything, `?quality=low` is the fallback for weak hardware.
+const QUALITY = {
+  low: { dpr: 1, shadow: 1024, shadowEvery: 3, msaa: 0, lights: 2 },
+  med: { dpr: 1.25, shadow: 1536, shadowEvery: 2, msaa: 2, lights: 2 },
+  high: { dpr: 2, shadow: 2048, shadowEvery: 1, msaa: 4, lights: 4 },
+}[FLAGS.quality];
+// 'low-power' asks dual-GPU laptops for the integrated GPU; Apple Silicon ignores it.
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'low-power' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
-let pixelRatio = Math.min(window.devicePixelRatio, IS_TOUCH ? CONFIG.render.mobilePixelRatio : FLAGS.hidpi ? 2 : CONFIG.render.maxPixelRatio);
+let pixelRatio = Math.min(window.devicePixelRatio, IS_TOUCH ? CONFIG.render.mobilePixelRatio : FLAGS.hidpi ? 2 : QUALITY.dpr);
 renderer.setPixelRatio(pixelRatio);
 const SHADOWS = CONFIG.render.shadowMaps && !IS_TOUCH;
 if (SHADOWS) {
@@ -45,7 +53,7 @@ if (SHADOWS) {
   renderer.shadowMap.autoUpdate = false; // one shadow pass per frame, set before the main render
 }
 
-const grade = new PostGrade(2, 2);
+const grade = new PostGrade(2, 2, QUALITY.msaa);
 const scene = new THREE.Scene();
 const BG = new THREE.Color(0x05061f);
 scene.background = BG;
@@ -61,7 +69,7 @@ scene.add(moon);
 scene.add(moon.target);
 if (SHADOWS) {
   moon.castShadow = true;
-  const sz = CONFIG.render.shadowMapSize;
+  const sz = QUALITY.shadow;
   moon.shadow.mapSize.set(sz, sz);
   const ext = CONFIG.render.shadowExtent;
   moon.shadow.camera.left = -ext;
@@ -78,7 +86,7 @@ const moonOffset = new THREE.Vector3(-24, 17, 11); // lower moon: longer, more p
 const rim = new THREE.DirectionalLight(0x6f7cff, 0.55);
 rim.position.set(5, 6, -8);
 scene.add(rim);
-const localLights = new LocalLights(scene, 4);
+const localLights = new LocalLights(scene, QUALITY.lights);
 // The size gauge renders the ball on its own layer; let the scene lights reach it.
 for (const l of [hemi, moon, rim, ...localLights.lights]) l.layers.enable(1);
 // Apron under the arena; the outside world (hills, forest, sky) is built once after the models load.
@@ -240,7 +248,7 @@ function buildWorld(): void {
   effects.clear();
   follow.snapBehind(player.pos, player.radius);
   if (FLAGS.debug) {
-    (window as unknown as { __dbg: unknown }).__dbg = { game, player, world, spawner, startRun, beginDeath, audio };
+    (window as unknown as { __dbg: unknown }).__dbg = { game, player, world, spawner, startRun, beginDeath, audio, renderer };
     (window as unknown as { __audioTest: unknown }).__audioTest = async () => (await import('./game/audioTest')).runAudioTest(audio.master);
   }
 }
@@ -416,7 +424,7 @@ function frame(now: number): void {
   localLights.update(world, player.pos.x, player.pos.z, dt);
   if (SHADOWS) {
     // Keep the shadow window centred on the ball; snap to texel-sized steps to avoid shimmer.
-    const step = (CONFIG.render.shadowExtent * 2) / CONFIG.render.shadowMapSize * 4;
+    const step = (CONFIG.render.shadowExtent * 2) / QUALITY.shadow * 4;
     const sx = Math.round(player.pos.x / step) * step;
     const sz2 = Math.round(player.pos.z / step) * step;
     moon.target.position.set(sx, 0, sz2);
@@ -434,7 +442,7 @@ function frame(now: number): void {
   fog.far = FLAGS.overhead ? 400 : camDist + 110;
   effects.update(dt);
   // Hard shadows every other frame: the lag is a few centimetres at full speed and invisible.
-  if (SHADOWS && frameN % 2 === 0) renderer.shadowMap.needsUpdate = true;
+  if (SHADOWS && frameN % QUALITY.shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
   grade.tick(now / 1000);
   // The grade pass does two renders (scene, then the quad); count the whole frame, not the last call.
   renderer.info.autoReset = false;
@@ -455,7 +463,7 @@ function frame(now: number): void {
     frames = 0;
     fpsTimer = 0;
     if (debugEl) {
-      debugEl.textContent = `fps ${fps}  ${phase}\ndraw ${mainCalls}  tris ${mainTris}\nr ${player.radius.toFixed(2)}  v ${Math.hypot(player.vel.x, player.vel.z).toFixed(1)}\nattached ${player.attached.length}  ents ${world.entities.length}  ghosts ${world.ghosts.length}\nt ${game.time.toFixed(0)}s  dpr ${pixelRatio.toFixed(2)}`;
+      debugEl.textContent = `fps ${fps}  ${phase}  q=${FLAGS.quality} ${renderer.domElement.width}x${renderer.domElement.height}\ndraw ${mainCalls}  tris ${mainTris}\nr ${player.radius.toFixed(2)}  v ${Math.hypot(player.vel.x, player.vel.z).toFixed(1)}\nattached ${player.attached.length}  ents ${world.entities.length}  ghosts ${world.ghosts.length}\nt ${game.time.toFixed(0)}s  dpr ${pixelRatio.toFixed(2)}`;
     }
   }
 }
@@ -487,15 +495,10 @@ input.onJump = () => {
 };
 
 async function boot(): Promise<void> {
-  // Prefer the Halloween logo when present; fall back to the plain mark.
+  // The share card carries the Gigantic wordmark; the title screen uses the Halloween mark via its own markup.
   const logo = new Image();
   logo.onload = () => (logoImg = logo);
-  logo.onerror = () => {
-    const fallback = new Image();
-    fallback.onload = () => (logoImg = fallback);
-    fallback.src = `${BASE}brand/icon.svg`;
-  };
-  logo.src = `${BASE}brand/logo-halloween.png`;
+  logo.src = `${BASE}brand/wordmark-white.svg`;
   await Promise.all([loadModels(`${BASE}assets/halloween.glb`), document.fonts.load('48px "DotGothic16"').catch(() => null), document.fonts.load('100px "Creepster"').catch(() => null), document.fonts.load('700 100px "Cinzel"').catch(() => null), document.fonts.load('italic 400 60px "EB Garamond"').catch(() => null)]);
   const loading = document.getElementById('loading');
   if (loading) {

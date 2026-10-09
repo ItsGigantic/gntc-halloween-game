@@ -20,6 +20,8 @@ export const FLAGS = {
   fps: num('fps', 60),
   /** Allow the full device pixel ratio on desktop (default caps at 1.5). */
   hidpi: bool('hidpi'),
+  /** Rendering tier: low | med | high (default med). */
+  quality: (['low', 'med', 'high'].includes(q.get('quality') ?? '') ? q.get('quality') : 'med') as 'low' | 'med' | 'high',
   seed: num('seed', 0),
   aspect: (q.get('aspect') ?? '') as '' | '1:1' | '4:5' | '16:9' | '9:16',
 };
