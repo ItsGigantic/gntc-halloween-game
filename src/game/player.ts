@@ -22,6 +22,8 @@ export interface Attached {
   sink: number;
   /** Hidden by the visible-mesh cap (independent of absorption). */
   capped: boolean;
+  /** The item's own scale at pickup; absorption shrinks relative to this. */
+  baseScale: number;
 }
 
 /** The rolling jack-o-lantern. Visual hierarchy: root (position) -> roll (rotation) -> core + attached. */
@@ -202,8 +204,7 @@ export class Player {
     const t = a.sink * a.sink * (3 - 2 * a.sink);
     const offset = Math.max(0.05, r - a.itemRadius * 0.35 - t * a.itemRadius * 1.25);
     a.obj.position.copy(a.dir).multiplyScalar(offset);
-    const sc = 1 - 0.25 * t;
-    a.obj.scale.setScalar(sc);
+    a.obj.scale.setScalar(a.baseScale * (1 - 0.25 * t));
     a.obj.visible = !a.capped && a.sink < 1;
   }
 
@@ -246,7 +247,7 @@ export class Player {
       o.layers.enable(BALL_LAYER);
     });
     this.roll.add(obj);
-    const a: Attached = { obj, dir, itemRadius, volume, points, kind, name, rAt: this.radius, sink: 0, capped: false };
+    const a: Attached = { obj, dir, itemRadius, volume, points, kind, name, rAt: this.radius, sink: 0, capped: false, baseScale: obj.scale.x };
     this.attached.push(a);
     if (this.attached.length > CONFIG.player.maxAttachedVisible) {
       // Hide the oldest so the mesh count stays bounded; it still counts.
@@ -273,7 +274,7 @@ export class Player {
       const a = this.attached.shift()!;
       this.roll.remove(a.obj);
       a.obj.visible = true;
-      a.obj.scale.setScalar(1);
+      a.obj.scale.setScalar(a.baseScale);
       a.sink = 0;
       this.volume = Math.max(0, this.volume - a.volume);
       out.push(a);

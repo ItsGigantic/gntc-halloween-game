@@ -37,6 +37,7 @@ Fonts: the UI uses system fonts. The brand fonts (TWK Lausanne, Reckless) are li
 | `?aspect=1:1` / `4:5` / `16:9` / `9:16` | letterbox the canvas for capture |
 | `?timescale=0.5` | slow motion |
 | `?mute=1` | start muted |
+| `?og=1` | renders the Open Graph image (a staged scene, `src/ui/ogScene.ts`) and shows it; `window.__ogCanvas` holds it |
 
 `H` toggles the HUD in showcase or debug mode.
 

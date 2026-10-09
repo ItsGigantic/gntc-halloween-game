@@ -14,6 +14,7 @@ import { Autopilot } from './game/autopilot';
 import { audio, sfx, musicControl } from './game/audio';
 import { Screens } from './ui/screens';
 import { renderTombstone } from './ui/tombstone';
+import { renderOgScene } from './ui/ogScene';
 import { renderCardScene } from './ui/cardScene';
 import type { Occluder } from './game/camera';
 import type { Entity } from './game/world';
@@ -491,6 +492,15 @@ async function boot(): Promise<void> {
   scene.add(player.root);
   buildOutside(scene, new Rng(FLAGS.seed || 1));
   resize();
+  if (FLAGS.og) {
+    const c = await renderOgScene(renderer, grade, `${BASE}brand/logo-halloween.png`);
+    (window as unknown as { __ogCanvas: HTMLCanvasElement }).__ogCanvas = c;
+    const img = document.createElement('img');
+    img.id = 'cardPreview';
+    img.src = c.toDataURL('image/png');
+    ui.appendChild(img);
+    return;
+  }
   if (FLAGS.card) {
     // Preview the share card with the title-screen ball after it has eaten a bit.
     showTitle();

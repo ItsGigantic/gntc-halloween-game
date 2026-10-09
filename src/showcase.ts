@@ -13,6 +13,8 @@ export const FLAGS = {
   stone: q.get('stone') ?? 'grave_A',
   map: ((q.get('map') ?? 'a').toLowerCase() === 'b' ? 'b' : 'a') as 'a' | 'b',
   overhead: bool('overhead'),
+  /** Render the Open Graph image and show it instead of the game. */
+  og: bool('og'),
   timescale: num('timescale', 1),
   seed: num('seed', 0),
   aspect: (q.get('aspect') ?? '') as '' | '1:1' | '4:5' | '16:9' | '9:16',
