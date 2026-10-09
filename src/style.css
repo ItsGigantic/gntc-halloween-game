@@ -98,12 +98,12 @@ html, body {
 .charge i b { display: block; height: 100%; width: 100%; background: #ffd36b; transform-origin: 0 50%; box-shadow: 0 0 8px rgba(255,211,107,.8); }
 @keyframes lastlife { 0%, 100% { transform: scale(1); filter: drop-shadow(0 2px 3px rgba(0,0,21,.7)); } 50% { transform: scale(1.15); filter: drop-shadow(0 0 10px rgba(255,80,80,.9)); } }
 .size { position: absolute; left: 0; right: 0; bottom: calc(var(--edge) + env(safe-area-inset-bottom)); text-align: center; pointer-events: none; }
-.size span { display: inline-flex; align-items: baseline; gap: 10px; color: #fff; transform-origin: 50% 100%;
-  background: rgba(0,0,21,.62); border: 1px solid var(--glass-line); padding: 9px 20px 10px; border-radius: 999px;
+/* One face, one size, one baseline: the display face alone keeps the pill balanced. */
+.size span { display: inline-block; color: #fff; transform-origin: 50% 100%;
+  background: rgba(0,0,21,.62); border: 1px solid var(--glass-line); padding: 10px 20px 11px; border-radius: 999px;
   box-shadow: 0 6px 20px rgba(0,0,21,.35); }
-.size small { font: 500 14px/1 var(--font-sans); color: rgba(255,255,255,.7); }
-.size b { font: 400 26px/1 var(--font-spooky); letter-spacing: .03em; color: var(--accent-soft);
-  text-shadow: 0 2px 0 rgba(0,0,21,.8), 0 0 18px rgba(255,118,2,.45); }
+.size b { font: 400 19px/1 var(--font-spooky); letter-spacing: .06em; color: var(--accent-soft);
+  text-shadow: 0 2px 0 rgba(0,0,21,.8); }
 .size span.swell { animation: sizepop .7s cubic-bezier(.34,1.56,.64,1); }
 @keyframes sizepop { 0% { transform: scale(1); } 20% { transform: scale(1.22); background: rgba(255,118,2,.35); border-color: var(--accent); } 100% { transform: scale(1); } }
 .icon-btn { position: absolute; right: calc(var(--edge) + env(safe-area-inset-right)); top: calc(var(--edge) + env(safe-area-inset-top)); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--glass-line); background: rgba(0,0,21,.58); color: #fff; cursor: pointer; pointer-events: auto !important; display: grid; place-items: center; }
@@ -170,8 +170,8 @@ html, body {
   /* Phones: the size pill moves to the bottom-left so it never meets the gauge, the tray
      stacks above it clear of the gauge's readout, and Hop sits above the gauge on the right. */
   .size { left: calc(var(--edge) + env(safe-area-inset-left)); right: auto; text-align: left; }
-  .size span { gap: 8px; padding: 7px 14px 8px; }
-  .size small { font-size: 12px; } .size b { font-size: 20px; }
+  .size span { padding: 8px 15px 9px; }
+  .size b { font-size: 16px; }
   #tray { bottom: calc(var(--edge) + 92px + env(safe-area-inset-bottom)); }
   #jumpBtn { right: calc(var(--edge) + env(safe-area-inset-right)); bottom: calc(var(--edge) + 232px + env(safe-area-inset-bottom)); }
   #sizeWidget, .sw-web { width: 210px; height: 210px; }

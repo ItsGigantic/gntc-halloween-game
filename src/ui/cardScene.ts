@@ -64,7 +64,8 @@ export function renderCardScene(
     stone.add(plaque);
   }
 
-  // Dressing.
+  // Dressing. The camera is tight, so everything sits inside the visible funnel: about +-0.8
+  // at the front edge, +-1.1 beside the stone, +-1.7 at the fence and +-2.6 among the far trees.
   const put = (name: string, x: number, z: number, ry = 0, s = 1) => {
     const o = cloneModel(name);
     const inf = model(name);
@@ -74,35 +75,40 @@ export function renderCardScene(
     root.add(o);
     return o;
   };
-  // A composed scene: candles and a pumpkin left, a lantern right, a bare tree behind the fence,
-  // bones and candy in the foreground, boulders and markers filling the sides.
-  put('candle_triple', -1.35, 0.95, 0.4, 0.85);
-  put('candle', -1.05, 1.35, 0, 0.75);
-  put('candle_melted', -1.7, 1.3, 1.2, 0.8);
-  put('pumpkin_orange_small', -2.1, 0.5, 0.6, 1.0);
-  put('pumpkin_orange', -2.6, 1.6, 2.2, 0.9);
-  put('lantern_standing', 1.75, 0.55, 0.3, 0.95);
-  put('candycorn', -0.55, 1.75, 0.8);
-  put('candy_pink_A', 0.3, 2.0, 2.6);
-  put('candy_green_B', -1.6, 2.1, 1.1);
-  put('bone_B', 1.0, 1.9, 2.2, 0.9);
-  put('bone_A', -0.3, 2.3, 0.4, 0.9);
-  put('skull', 2.3, 1.3, -0.5, 0.55);
-  put('gravemarker_A', -3.1, -1.2, 0.3);
-  put('gravestone', 3.0, -1.4, -0.4);
-  put('rock_e', 2.6, -0.4, 1.2);
-  put('rock_a', -2.9, 0.2, 0.4);
-  put('bare_tree_c', -3.6, -2.6, 0.5, 1.5);
-  put('tree_dead_medium', 3.9, -3.2, 1.1, 1.3);
-  put('fence_seperate', -2, -2.8, 0);
-  put('fence_seperate', 2, -2.8, 0);
-  put('bush_a', 3.2, -2.2, 0.2, 1.4);
-  // Backdrop beyond the fence: a graveyard receding into fog under a moon.
+  // Foreground, inside the funnel (|x| < 0.9 at the path): candles front-left, a lantern and a
+  // little pumpkin front-right, candy and a bone between them. Small, low, nothing near the edges.
+  put('candle_triple', -0.78, 0.72, 0.4, 0.5);
+  put('candle', -0.95, 0.98, 0, 0.45);
+  put('candle_melted', -0.6, 0.95, 1.2, 0.45);
+  put('lantern_standing', 0.82, 0.68, 0.3, 0.5);
+  put('pumpkin_orange_small', 0.55, 1.08, 0.6, 0.55);
+  put('candycorn', -0.25, 1.2, 0.8, 0.42);
+  put('candy_pink_A', 0.12, 1.3, 2.6, 0.36);
+  put('candy_green_B', -0.5, 1.25, 1.1, 0.36);
+  put('bone_A', 0.3, 0.95, 2.2, 0.48);
+  put('candy_blue_A', -0.02, 1.02, 0.4, 0.36);
+  put('candycorn', 0.8, 1.25, 1.9, 0.42);
+  put('candy_purple_B', -0.85, 1.22, 0.5, 0.36);
+  // Behind the stone, where the funnel widens: markers and bushes on both shoulders, then the fence.
+  put('gravestone', 1.5, -2.7, -0.35, 0.85);
+  put('gravemarker_B', -1.55, -2.5, 0.3, 0.9);
+  put('skull', -1.25, -1.4, -0.5, 0.5);
+  put('bush_a', -1.85, -1.8, 0.2, 1.0);
+  put('bush_b', 1.95, -1.7, 1.1, 0.9);
+  put('rock_a', 1.35, -1.1, 0.4, 0.7);
+  put('pumpkin_orange', -1.6, -1.1, 0.7, 0.8);
+  put('fence_seperate', 0, -3.1, 0);
+  put('fence_seperate', -4, -3.1, 0);
+  put('fence_seperate', 4, -3.1, 0);
+  put('fence_pillar', -2, -3.1, 0);
+  put('fence_pillar', 2, -3.1, 0);
+  put('post_lantern', -1.9, -3.4, Math.PI, 0.9);
+  // Far: a graveyard receding into fog under the moon.
   for (const [n, x, z, ry, sc] of [
-    ['tree_pine_orange_large', -5.5, -7, 0.3, 1.3], ['tree_pine_yellow_medium', -2.2, -8.5, 1.0, 1.3], ['tree_dead_large', 1.6, -7.5, 0.6, 1.5],
-    ['tree_pine_orange_medium', 4.8, -8, 2.1, 1.3], ['tree_pine_yellow_large', 8, -9, 0.2, 1.3], ['tree_dead_medium', -8, -8, 1.4, 1.5],
-    ['bare_tree_d', 6.5, -5.5, 0.9, 1.5], ['grave_B', -4.2, -4.6, 0.2, 1], ['gravestone', -1.2, -5.2, -0.3, 1], ['grave_A', 3.2, -4.8, 0.4, 1],
-    ['gravemarker_B', 5.6, -4.2, 0.1, 1], ['pumpkin_orange', -6.5, -4.4, 0.7, 1], ['post_lantern', -3.3, -3.9, Math.PI, 1],
+    ['tree_pine_orange_large', -3.6, -8, 0.3, 1.2], ['tree_pine_yellow_medium', -1.4, -8.8, 1.0, 1.2], ['tree_dead_large', 1.0, -7.6, 0.6, 1.4],
+    ['tree_pine_orange_medium', 2.9, -8.2, 2.1, 1.2], ['tree_pine_yellow_large', 4.6, -9, 0.2, 1.2], ['tree_dead_medium', -5.2, -8, 1.4, 1.4],
+    ['bare_tree_d', 3.3, -5.6, 0.9, 1.3], ['bare_tree_c', -3.0, -5.4, 0.5, 1.3], ['grave_B', -1.9, -4.8, 0.2, 1], ['grave_A', 1.6, -5.0, 0.4, 1],
+    ['gravemarker_A', 0.2, -5.4, -0.3, 1], ['pumpkin_orange', -2.6, -4.4, 0.7, 1], ['scarecrow', 2.3, -6.3, -0.3, 1.1],
   ] as const) put(n, x, z, ry, sc);
   // Moon and stars.
   const starGeo = new THREE.BufferGeometry();
@@ -120,24 +126,12 @@ export function renderCardScene(
   mctx.fillStyle = mg; mctx.fillRect(0, 0, 128, 128);
   const moonTex = new THREE.CanvasTexture(moonC); moonTex.colorSpace = THREE.SRGBColorSpace;
   const moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, fog: false, transparent: true, depthWrite: false }));
-  moonSprite.position.set(-9, 11, -26); moonSprite.scale.setScalar(5.5);
+  moonSprite.position.set(2.3, 7.2, -26); moonSprite.scale.setScalar(4.6);
   scene.add(moonSprite);
 
-  // The player's ball, normalised to a display radius so every card composes the same.
-  const R = 0.4;
-  const ballGroup = new THREE.Group();
-  const roll = ballRoll.clone(true);
-  roll.traverse((o) => {
-    o.visible = true;
-  });
-  ballGroup.add(roll);
-  ballGroup.scale.setScalar(R / ballRadius);
-  ballGroup.position.set(1.35, R, 1.7);
-  root.add(ballGroup);
-  const glow = new THREE.PointLight(0xffa040, 3.5, 4.5, 1.8);
-  glow.position.set(1.35, R + 0.3, 1.7);
-  root.add(glow);
-
+  // The player's ball is not on the card: the stone and the dressing carry it.
+  void ballRoll;
+  void ballRadius;
   scene.add(new THREE.HemisphereLight(0xa9b8ff, 0x2a1b3d, 1.7));
   const moon = new THREE.DirectionalLight(0xdbe4ff, 2.2);
   moon.position.set(-4, 8, 5);
@@ -164,9 +158,11 @@ export function renderCardScene(
 
   // Nearly frontal so the inscription stays legible; a touch of elevation for depth.
   // Wide enough to show the dressing either side; the stone still owns about two thirds of the height.
-  const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 100);
-  camera.position.set(0, 1.7, 7.2);
-  camera.lookAt(0, 1.05, 0);
+  // Close enough that the stone owns the middle of the card: the inscription has to stay
+  // legible on a phone feed, so the plaque gets as many pixels as the frame allows.
+  const camera = new THREE.PerspectiveCamera(28, W / H, 0.1, 100);
+  camera.position.set(0, 1.75, 5.9);
+  camera.lookAt(0, 0.78, 0);
   const face = new THREE.DirectionalLight(0xe9eeff, 0.8);
   face.position.set(0.4, 2.2, 6);
   scene.add(face);
@@ -330,8 +326,31 @@ function inscriptionTexture(ins: Inscription): THREE.CanvasTexture {
   // Roman capitals, a carved rule, the score as the hero numerals, "POINTS" small, and the
   // epitaph as a single italic line. Stats are left off the stone; they would only compete.
   const epitaph = `Grew as big as ${ins.milestone}`;
-  spaced(0.1, 100);
-  const namePx = fit(ctx, name, W2 - 190, (px) => { spaced(0.1, px); return `700 ${px}px ${ROMAN}`; }, 136, 76);
+  // The name: one line when it fits at a readable size; a long multi-word name breaks into two
+  // balanced lines rather than shrinking into illegibility; a single long word tightens tracking.
+  const nameMax = W2 - 170;
+  let nameTrack = 0.1;
+  const nameFont = (px: number) => { spaced(nameTrack, px); return `700 ${px}px ${ROMAN}`; };
+  const widthAt = (txt: string, px: number) => { ctx.font = nameFont(px); return ctx.measureText(txt).width; };
+  let nameLines = [name];
+  let namePx = fit(ctx, name, nameMax, nameFont, 136, 104);
+  if (widthAt(name, namePx) > nameMax) {
+    const words = name.split(' ');
+    if (words.length > 1) {
+      let cut = 1, diff = Infinity;
+      for (let i = 1; i < words.length; i++) {
+        const d = Math.abs(words.slice(0, i).join(' ').length - words.slice(i).join(' ').length);
+        if (d < diff) { diff = d; cut = i; }
+      }
+      nameLines = [words.slice(0, cut).join(' '), words.slice(cut).join(' ')];
+      namePx = Math.min(...nameLines.map((l) => fit(ctx, l, nameMax, nameFont, 124, 84)));
+    } else {
+      nameTrack = 0.03;
+      namePx = fit(ctx, name, nameMax, nameFont, 136, 72);
+    }
+  }
+  const nameGap = 0.16 * namePx;
+  const nameH = namePx * nameLines.length + nameGap * (nameLines.length - 1);
   // Tight tracking on the numerals so six-figure scores still fit at a good size.
   spaced(-0.03, 100);
   const scorePx = fit(ctx, ins.score, W2 - 150, (px) => { spaced(-0.03, px); return `700 ${px}px ${ROMAN}`; }, 270, 140);
@@ -343,16 +362,17 @@ function inscriptionTexture(ins: Inscription): THREE.CanvasTexture {
   const g3 = 0.5 * namePx;       // rule -> score
   const g4 = 0.28 * scorePx;     // score -> points
   const g5 = 1.5 * pts;          // points -> epitaph
-  const block = hl + g1 + namePx + g2 + rule + g3 + scorePx + g4 + pts + g5 + epiPx;
+  const block = hl + g1 + nameH + g2 + rule + g3 + scorePx + g4 + pts + g5 + epiPx;
   let y = Math.max(230, (H2 - block) / 2 + 64) + hl * 0.5;
   spaced(0.28, hl);
   ctx.font = `600 ${hl}px ${ROMAN}`;
   carve(ctx, 'HERE LIES', cx, y);
   y += hl * 0.5 + g1 + namePx * 0.5;
-  spaced(0.1, namePx);
-  ctx.font = `700 ${namePx}px ${ROMAN}`;
-  carve(ctx, name, cx, y + namePx * 0.04, '#1e2138');
-  y += namePx * 0.5 + g2 + rule * 0.5;
+  ctx.font = nameFont(namePx);
+  for (let i = 0; i < nameLines.length; i++) {
+    carve(ctx, nameLines[i], cx, y + namePx * 0.04 + i * (namePx + nameGap), '#1e2138');
+  }
+  y += nameH - namePx * 0.5 + g2 + rule * 0.5;
   carveRule(ctx, cx, y, 300);
   y += rule * 0.5 + g3 + scorePx * 0.5;
   spaced(-0.03, scorePx);

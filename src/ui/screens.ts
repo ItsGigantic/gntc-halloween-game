@@ -65,7 +65,7 @@ export class Screens {
         </div>
         <div id="lives" class="lives" aria-label="Skull hits left">${SKULL}${SKULL}${SKULL}</div>
         <div id="charge" class="charge" aria-label="Shield time left"><span>Shielded</span><i><b></b></i></div>
-        <div id="size" class="size"><span><small>As big as</small><b>a pumpkin</b></span></div>
+        <div id="size" class="size"><span><b>as big as a pumpkin</b></span></div>
         <button id="mute" class="icon-btn" aria-label="Toggle sound"></button>
       </div>
       <div id="banner"></div>
@@ -209,7 +209,7 @@ export class Screens {
     }
     if (h.milestone !== this.lastSize) {
       const pill = this.sizeEl.firstElementChild as HTMLElement;
-      pill.querySelector('b')!.textContent = h.milestone;
+      pill.querySelector('b')!.textContent = `as big as ${h.milestone}`;
       if (this.lastSize) {
         pill.classList.remove('swell');
         void pill.offsetWidth;

@@ -31,11 +31,12 @@ const BASE = import.meta.env.BASE_URL;
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ui = document.getElementById('ui') as HTMLDivElement;
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_TOUCH, alpha: true, powerPreference: 'high-performance' });
+// 'default' power preference: on dual-GPU laptops 'high-performance' wakes the discrete GPU and the fans for a game that doesn't need it.
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_TOUCH, alpha: true, powerPreference: 'default' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
-const pixelRatio = Math.min(window.devicePixelRatio, IS_TOUCH ? CONFIG.render.mobilePixelRatio : CONFIG.render.maxPixelRatio);
+let pixelRatio = Math.min(window.devicePixelRatio, IS_TOUCH ? CONFIG.render.mobilePixelRatio : FLAGS.hidpi ? 2 : CONFIG.render.maxPixelRatio);
 renderer.setPixelRatio(pixelRatio);
 const SHADOWS = CONFIG.render.shadowMaps && !IS_TOUCH;
 if (SHADOWS) {
@@ -352,10 +353,23 @@ let fps = 0;
 let mainCalls = 0;
 let mainTris = 0;
 
+let frameN = 0;
+let slowFrames = 0;
 function frame(now: number): void {
   requestAnimationFrame(frame);
+  // Frame cap: 120 Hz displays would otherwise render twice the frames for no visible gain.
+  if (now - last < 1000 / FLAGS.fps - 1.5) return;
   const rawDt = Math.min(0.05, (now - last) / 1000);
   last = now;
+  frameN++;
+  // Adaptive resolution: if frames keep running long, step the pixel ratio down (never below 1).
+  if (rawDt > 0.024) slowFrames++; else slowFrames = Math.max(0, slowFrames - 1);
+  if (slowFrames > 90 && pixelRatio > 1) {
+    pixelRatio = Math.max(1, pixelRatio - 0.25);
+    renderer.setPixelRatio(pixelRatio);
+    resize();
+    slowFrames = 0;
+  }
   let dt = rawDt * FLAGS.timescale;
   if (hitStopT > 0) {
     hitStopT -= rawDt;
@@ -419,7 +433,8 @@ function frame(now: number): void {
   fog.near = FLAGS.overhead ? 150 : camDist + 18;
   fog.far = FLAGS.overhead ? 400 : camDist + 110;
   effects.update(dt);
-  if (SHADOWS) renderer.shadowMap.needsUpdate = true;
+  // Hard shadows every other frame: the lag is a few centimetres at full speed and invisible.
+  if (SHADOWS && frameN % 2 === 0) renderer.shadowMap.needsUpdate = true;
   grade.tick(now / 1000);
   // The grade pass does two renders (scene, then the quad); count the whole frame, not the last call.
   renderer.info.autoReset = false;
@@ -506,8 +521,9 @@ async function boot(): Promise<void> {
     showTitle();
     setTimeout(async () => {
       const stats: RunStats = { score: Number(new URLSearchParams(location.search).get('score') ?? 12340), radius: player.radius, candies: 37, items: 52, time: 72, milestone: 'a gravestone', maxMultiplier: 4, cause: 'skull' };
-      const card = renderCardScene(renderer, player.roll, player.radius, FLAGS.stone, 0, grade, inscriptionFor(screens.name || 'Ben', stats, true));
-      const c = await renderTombstone({ name: screens.name || 'Ben', stats, card, isBest: true, url: GAME_URL, logo: logoImg });
+      const previewName = new URLSearchParams(location.search).get('name') || screens.name || 'Ben';
+      const card = renderCardScene(renderer, player.roll, player.radius, FLAGS.stone, 0, grade, inscriptionFor(previewName, stats, true));
+      const c = await renderTombstone({ name: previewName, stats, card, isBest: true, url: GAME_URL, logo: logoImg });
       const img = document.createElement('img');
       img.id = 'cardPreview';
       img.src = c.toDataURL('image/png');

@@ -39,7 +39,7 @@ export const CONFIG = {
     gainSlope: 0.8,
   },
   render: {
-    maxPixelRatio: 2,
+    maxPixelRatio: 1.5,
     mobilePixelRatio: 1.5,
     /** Hard directional shadow maps (desktop); touch devices use instanced blob shadows instead. */
     shadowMaps: true,

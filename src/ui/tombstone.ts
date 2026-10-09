@@ -39,7 +39,7 @@ export async function renderTombstone(o: TombstoneOpts): Promise<HTMLCanvasEleme
   ctx.fillStyle = bot;
   ctx.fillRect(0, H - 190, W, 190);
 
-  // Header: logo + title left, event right.
+  // Header: logo + title, left.
   const margin = 56;
   const hy = 68;
   if (o.logo) {
@@ -51,10 +51,6 @@ export async function renderTombstone(o: TombstoneOpts): Promise<HTMLCanvasEleme
     ctx.fillStyle = 'rgba(255,255,255,0.9)';
     ctx.fillText('Gigantic Gourd', margin + lw + 14, hy);
   }
-  ctx.textAlign = 'right';
-  ctx.font = `500 26px ${SANS}`;
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.fillText('Halloween 2026', W - margin, hy);
 
   // Footer: the call to action.
   const fy = H - 64;

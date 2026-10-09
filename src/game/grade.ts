@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { IS_TOUCH } from '../config';
 
 /**
  * Single-pass colour grade. The scene renders into an MSAA target, then one fullscreen
@@ -14,7 +13,7 @@ export class PostGrade {
 
   constructor(width: number, height: number) {
     this.target = new THREE.WebGLRenderTarget(width, height, {
-      samples: IS_TOUCH ? 2 : 4,
+      samples: 2, // 2x MSAA is plenty for flat-shaded low-poly and halves the resolve cost of 4x
       depthBuffer: true,
       stencilBuffer: false,
     });

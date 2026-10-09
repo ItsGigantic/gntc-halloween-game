@@ -16,6 +16,10 @@ export const FLAGS = {
   /** Render the Open Graph image and show it instead of the game. */
   og: bool('og'),
   timescale: num('timescale', 1),
+  /** Frame cap (default 60; 120 Hz displays otherwise double the GPU work). */
+  fps: num('fps', 60),
+  /** Allow the full device pixel ratio on desktop (default caps at 1.5). */
+  hidpi: bool('hidpi'),
   seed: num('seed', 0),
   aspect: (q.get('aspect') ?? '') as '' | '1:1' | '4:5' | '16:9' | '9:16',
 };
