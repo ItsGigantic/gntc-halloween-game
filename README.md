@@ -17,7 +17,7 @@ Desktop: WASD / arrows, or drag with the mouse; Space hops. Mobile: drag anywher
 Every push to `main` deploys a test build to GitHub Pages at https://itsgigantic.github.io/gntc-halloween-game/ (see `.github/workflows/pages.yml`). For the real thing, two routes, same build:
 
 1. **On the Astro site (recommended).** `npm run build:site` builds with base path `/halloween/`. Copy `dist/` to the Astro project's `public/halloween/` and the game lives at `itsgigantic.com/halloween` with no iframe.
-2. **Standalone.** `npm run build` and host `dist/` on Netlify / Cloudflare Pages / Vercel. Embed with a full-viewport `<iframe allow="fullscreen">` if it must sit inside another page.
+2. **Framed on Webflow (current plan).** The GitHub Pages build is embedded on the Webflow page `itsgigantic.com/halloween` with a full-viewport iframe. The exact snippet, page settings and the analytics bridge are in `tools/webflow-embed.html`. The iframe needs `allow="web-share"` so the share sheet works on phones.
 
 Set the share URL in `src/config.ts` (`GAME_URL`) if the final path differs.
 

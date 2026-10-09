@@ -1,0 +1,30 @@
+<!--
+  Webflow page: itsgigantic.com/halloween
+  1. Make a blank page at /halloween with no navbar or footer symbols.
+  2. Page settings > Custom code > Inside <head>: paste the <style> block.
+  3. Drop one Embed element on the page and paste the <div> block.
+  The game detects it is framed and posts analytics events to this page via postMessage
+  (type "gigantic-gourd"); the <script> forwards them to dataLayer so GTM/GA4 see them.
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000015; overscroll-behavior: none; }
+  .gourd-frame { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; border: 0; display: block; background: #000015; }
+</style>
+
+<div class="gourd-wrap">
+  <iframe
+    class="gourd-frame"
+    src="https://itsgigantic.github.io/gntc-halloween-game/"
+    title="Gigantic Gourd"
+    allow="web-share; autoplay; fullscreen"
+    referrerpolicy="strict-origin-when-cross-origin"
+    loading="eager"
+  ></iframe>
+  <script>
+    window.addEventListener('message', function (e) {
+      if (!e.data || e.data.type !== 'gigantic-gourd') return;
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(Object.assign({ event: e.data.event }, e.data.params || {}));
+    });
+  </script>
+</div>
