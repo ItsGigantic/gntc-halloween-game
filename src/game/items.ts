@@ -189,18 +189,21 @@ export function restHeight(def: ItemDef): number {
 
 /** Size comparison milestones keyed by ball radius; each matches a model in the level (diameter = 2r in world units). */
 export const MILESTONES: [number, string][] = [
-  // Radius thresholds are where the ball's diameter matches the object's biggest dimension in
-  // world units (model size x catalog scale), rounded so each step is a clear jump up.
-  [0, 'a pumpkin'],            // pumpkin_orange 1.0 wide; the ball starts at 1.1
-  [0.8, 'a treasure chest'],   // chest 1.6 wide; you are already a jack-o-lantern, so no step for that
-  [1.1, 'a gravestone'],       // grave_B 2.2 tall
-  [1.7, 'a scarecrow'],        // 2.33 x 1.45 = 3.4 tall
-  [2.0, 'a coffin'],           // 3.0 x 1.3 = 3.9 long
-  [2.6, 'a tractor'],          // 3.99 x 1.3 = 5.2 long
-  [3.1, 'a dead tree'],        // tree_dead_medium 4.2 x 1.5 = 6.3 tall
-  [4.0, 'the crypt'],          // 8.0 tall
-  [5.2, 'a big pine tree'],    // 7.5 x 1.4 = 10.5 tall
-  [6.5, 'GIGANTIC'],
+  // Thresholds are the object's "equivalent radius": the larger of the radius of a sphere with
+  // the model's bulk (box volume x how full the box is) and 85% of half its height, so flat
+  // things count by bulk and tall thin things by height. That is how people judge "as big as".
+  // Numbers from the glb bounds x catalog scale; see the comment on each line.
+  [0, 'a pumpkin'],            // bulk 0.47 (the ball starts at 0.55)
+  [0.7, 'a gravestone'],       // 1.4 x 1.6 x 0.4, by height 0.68
+  [0.85, 'a treasure chest'],  // 1.7 x 1.3 x 1.45, bulk 0.85
+  [1.05, 'a barrel'],          // big_barrel 1.8 x 2.0 x 1.8, bulk 1.05
+  [1.3, 'a stack of crates'],  // 2.1 x 2.1 x 2.25, bulk 1.29
+  [1.5, 'a coffin'],           // 2.6 x 1.7 x 3.9, bulk 1.52
+  [2.15, 'a tractor'],         // 3.7 x 3.65 x 5.4, bulk 2.13
+  [2.7, 'a dead tree'],        // tree_dead_medium 6.3 tall, by height 2.67
+  [3.5, 'a pine tree'],        // tree_pine medium 8.2 tall, by height 3.49
+  [4.2, 'the crypt'],          // 6 x 8 x 8, bulk 4.19
+  [5.5, 'GIGANTIC'],
 ];
 
 /** World units -> displayed metres (gravestone 2.2 units = 1.1 m). */
