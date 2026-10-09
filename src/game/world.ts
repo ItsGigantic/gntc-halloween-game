@@ -590,7 +590,7 @@ export class World {
       // Slight sideways wobble so they feel alive.
       const wob = Math.sin(g.t * 1.7) * 0.6;
       // Every ~6 s a 1.5 s lunge at 1.8x speed, so a moving player still has to dodge.
-      const lunge = (g.t % 7) < 1.2 ? 1.5 : 1;
+      const lunge = (g.t % 7) < 1.2 ? 1.35 : 1;
       g.x += (dx / d) * g.speed * lunge * dt + (-dz / d) * wob * dt;
       g.z += (dz / d) * g.speed * lunge * dt + (dx / d) * wob * dt;
       g.y = playerPos.y + Math.sin(g.t * 2.2) * 0.25 * g.scale;
@@ -897,7 +897,7 @@ export class World {
     place('pumpkin_orange_small', 6, {}, 4); place('pumpkin_orange', 3, {}, 6);
     place('bone_A', 5, {}, 3); place('bone_B', 8, {}, 3);
     place('candy_bucket_B', 2, {}, 10);
-    place('skull', 14, {}, 11); place('ribcage', 2, {}, 13); place('skull_candle', 2, {}, 11);
+    place('skull', 14, {}, 17); place('ribcage', 2, {}, 18); place('skull_candle', 2, {}, 17);
 
     // Candy carpet, denser along the paths.
     this.topUpCandy(300, null);
@@ -1146,7 +1146,7 @@ export class World {
     place('pumpkin_orange_small', 6, {}, 4); place('bone_B', 8, {}, 4); place('pebble_a', 10, {}, 3);
     place('candle_thin', 6, {}, 5); place('candle', 5, {}, 5); place('rock_c', 5, {}, 6);
     place('candy_bucket_B', 1, { cx: -20, cz: 22, min: 2, max: 8 }, 12);
-    place('skull', 11, {}, 11); place('skull_candle', 2, {}, 11); place('ribcage', 1, {}, 14);
+    place('skull', 11, {}, 17); place('skull_candle', 2, {}, 17); place('ribcage', 1, {}, 18);
     this.topUpCandy(300, null);
   }
 

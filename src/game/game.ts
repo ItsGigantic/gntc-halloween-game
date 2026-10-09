@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CONFIG } from '../config';
-import { ITEM_BY_NAME, milestoneFor } from './items';
+import { ITEM_BY_NAME, MILESTONES, milestoneFor } from './items';
 import type { World, Entity } from './world';
 import type { Player } from './player';
 import type { Effects } from './effects';
@@ -63,6 +63,8 @@ export class Game {
   invuln = 0;
   /** Golden shield seconds left. */
   charge = 0;
+  /** Highest milestone index celebrated this run. */
+  private bestMilestone = 0;
   private sparkT = 0;
   private readonly sparkCol = new THREE.Color();
   candies = 0;
@@ -93,6 +95,7 @@ export class Game {
     this.maxMultiplier = 1;
     this.invuln = 0;
     this.charge = 0;
+    this.bestMilestone = 0;
     this.candies = 0;
     this.items = 0;
     this.time = 0;
@@ -289,6 +292,11 @@ export class Game {
     const ms = milestoneFor(p.radius);
     if (ms !== this.milestone && p.radius > before) {
       this.milestone = ms;
+      // Celebrate each milestone once per run: after a strike sheds you below a threshold,
+      // crossing it again is a recovery, not news.
+      const idx = MILESTONES.findIndex((m) => m[1] === ms);
+      if (idx <= this.bestMilestone) return;
+      this.bestMilestone = idx;
       // Celebration: the ball pulses and swallows its cargo, gold bursts out, the camera breathes.
       p.powerUp();
       const at = new THREE.Vector3(p.pos.x, p.pos.y, p.pos.z);

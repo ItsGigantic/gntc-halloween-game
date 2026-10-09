@@ -88,12 +88,16 @@ export class Autopilot {
     const len = Math.hypot(dx, dz) || 1;
     const near = this.world.hash.query((x + tx) / 2, (z + tz) / 2, len / 2 + 3, this.near);
     for (const e of near) {
-      if (e.state !== 'free' || e.def.kind === 'scenery' || e.def.kind === 'skull') continue;
-      if (e.pickRadius <= r * CONFIG.rules.pickRatio) continue;
+      if (e.state !== 'free' || e.def.kind === 'scenery') continue;
+      const skull = e.def.kind === 'skull' && r <= e.pickRadius * CONFIG.rules.crushRatio;
+      if (!skull && e.pickRadius <= r * CONFIG.rules.pickRatio) continue;
+      if (e.def.kind === 'skull' && !skull) continue;
       const t = ((e.x - x) * dx + (e.z - z) * dz) / (len * len);
       if (t <= 0.05 || t >= 0.95) continue;
       const px = x + dx * t, pz = z + dz * t;
-      if (Math.hypot(e.x - px, e.z - pz) < e.collideRadius + r + 0.3) return true;
+      // A live skull on the line is a no-go lane, with a wider berth than a mere blocker.
+      const berth = skull ? e.pickRadius * 1.35 + r + 1.2 : e.collideRadius + r + 0.3;
+      if (Math.hypot(e.x - px, e.z - pz) < berth) return true;
     }
     return false;
   }
@@ -102,7 +106,7 @@ export class Autopilot {
     const p = this.player;
     this.tmp.set(p.pos.x - x, 0, p.pos.z - z);
     const d = this.tmp.length();
-    if (d < range && d > 1e-3) this.dir.addScaledVector(this.tmp.normalize(), (range - d) / range * 2.2);
+    if (d < range && d > 1e-3) this.dir.addScaledVector(this.tmp.normalize(), (range - d) / range * 3.2);
   }
 
   private pick(): Entity | null {

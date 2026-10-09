@@ -35,7 +35,7 @@ export const CONFIG = {
     pickRatio: 1.15,
     /** Ball radius / skull radius before a static skull can be crushed instead of hurting. */
     crushRatio: 7,
-    maxGainFrac: 0.065,
+    maxGainFrac: 0.045,
     gainSlope: 0.8,
   },
   render: {

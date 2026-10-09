@@ -248,7 +248,7 @@ function buildWorld(): void {
   effects.clear();
   follow.snapBehind(player.pos, player.radius);
   if (FLAGS.debug) {
-    (window as unknown as { __dbg: unknown }).__dbg = { game, player, world, spawner, startRun, beginDeath, audio, renderer };
+    (window as unknown as { __dbg: unknown }).__dbg = { game, player, world, spawner, startRun, beginDeath, audio, renderer, step: stepHeadless, flags: FLAGS };
     (window as unknown as { __audioTest: unknown }).__audioTest = async () => (await import('./game/audioTest')).runAudioTest(audio.master);
   }
 }
@@ -361,28 +361,8 @@ let fps = 0;
 let mainCalls = 0;
 let mainTris = 0;
 
-let frameN = 0;
-let slowFrames = 0;
-function frame(now: number): void {
-  requestAnimationFrame(frame);
-  // Frame cap: 120 Hz displays would otherwise render twice the frames for no visible gain.
-  if (now - last < 1000 / FLAGS.fps - 1.5) return;
-  const rawDt = Math.min(0.05, (now - last) / 1000);
-  last = now;
-  frameN++;
-  // Adaptive resolution: if frames keep running long, step the pixel ratio down (never below 1).
-  if (rawDt > 0.024) slowFrames++; else slowFrames = Math.max(0, slowFrames - 1);
-  if (slowFrames > 90 && pixelRatio > 1) {
-    pixelRatio = Math.max(1, pixelRatio - 0.25);
-    renderer.setPixelRatio(pixelRatio);
-    resize();
-    slowFrames = 0;
-  }
-  let dt = rawDt * FLAGS.timescale;
-  if (hitStopT > 0) {
-    hitStopT -= rawDt;
-    dt *= hitStopScale;
-  }
+/** One simulation step: input, physics, pickups, spawns, camera. No rendering. */
+function simulate(dt: number): void {
   input.update();
   follow.basis(fwd, right);
   const auto = phase === 'title' || (FLAGS.autopilot && Math.hypot(input.x, input.y) < 0.05);
@@ -441,6 +421,43 @@ function frame(now: number): void {
   fog.near = FLAGS.overhead ? 150 : camDist + 18;
   fog.far = FLAGS.overhead ? 400 : camDist + 110;
   effects.update(dt);
+}
+
+/** Headless fast-forward for playtesting (debug): runs `seconds` of game time without rendering. */
+function stepHeadless(seconds: number, hz = 60): void {
+  const wasQuiet = effects.quiet;
+  effects.quiet = true;
+  const n = Math.round(seconds * hz);
+  for (let i = 0; i < n; i++) {
+    if (phase !== 'playing' && phase !== 'dying') break;
+    simulate(1 / hz);
+  }
+  effects.quiet = wasQuiet;
+}
+
+let frameN = 0;
+let slowFrames = 0;
+function frame(now: number): void {
+  requestAnimationFrame(frame);
+  // Frame cap: 120 Hz displays would otherwise render twice the frames for no visible gain.
+  if (now - last < 1000 / FLAGS.fps - 1.5) return;
+  const rawDt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  frameN++;
+  // Adaptive resolution: if frames keep running long, step the pixel ratio down (never below 1).
+  if (rawDt > 0.024) slowFrames++; else slowFrames = Math.max(0, slowFrames - 1);
+  if (slowFrames > 90 && pixelRatio > 1) {
+    pixelRatio = Math.max(1, pixelRatio - 0.25);
+    renderer.setPixelRatio(pixelRatio);
+    resize();
+    slowFrames = 0;
+  }
+  let dt = rawDt * FLAGS.timescale;
+  if (hitStopT > 0) {
+    hitStopT -= rawDt;
+    dt *= hitStopScale;
+  }
+  simulate(dt);
   // Hard shadows every other frame: the lag is a few centimetres at full speed and invisible.
   if (SHADOWS && frameN % QUALITY.shadowEvery === 0) renderer.shadowMap.needsUpdate = true;
   grade.tick(now / 1000);

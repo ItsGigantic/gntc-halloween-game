@@ -9,7 +9,7 @@ export class Spawner {
   private candyTimer = 0;
   private propTimer = 0;
   private ghostTimer = 8;
-  private hazardTimer = 25;
+  private hazardTimer = 35;
   private powerTimer = CONFIG.rules.powerFirstAt;
   elapsed = 0;
 
@@ -19,7 +19,7 @@ export class Spawner {
     this.candyTimer = 0;
     this.propTimer = 0;
     this.ghostTimer = 8;
-    this.hazardTimer = 25;
+    this.hazardTimer = 35;
     this.powerTimer = CONFIG.rules.powerFirstAt;
     this.elapsed = 0;
   }
@@ -78,7 +78,9 @@ export class Spawner {
     }
 
     // Ghost skulls: start after 30s, more and faster over time.
-    if (this.elapsed > 30) {
+    // Ghosts wait for both the clock and some growth: hunting a still-tiny, slow ball only
+    // produces a death spiral, so a slow start gets left alone a little longer.
+    if (this.elapsed > 40 && p.radius > 0.85) {
       const d = this.difficulty;
       const maxGhosts = this.elapsed < 70 ? 1 : 2 + Math.floor(d * 2);
       const interval = 14 - d * 7;
@@ -90,7 +92,7 @@ export class Spawner {
         const x = THREE.MathUtils.clamp(p.pos.x + Math.cos(a) * dist, -this.world.half + 2, this.world.half - 2);
         const z = THREE.MathUtils.clamp(p.pos.z + Math.sin(a) * dist, -this.world.half + 2, this.world.half - 2);
         const scale = Math.max(1, p.radius * 1.1);
-        const speed = Math.max(3, p.maxSpeed() * (0.36 + d * 0.18));
+        const speed = Math.max(2.6, p.maxSpeed() * (0.33 + d * 0.18));
         this.world.spawnGhost(ITEM_BY_NAME.get('skull')!, x, z, scale, speed);
       }
       // Keep existing ghosts scaled to the player so they stay readable.
