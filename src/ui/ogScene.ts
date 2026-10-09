@@ -63,7 +63,7 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   const ember = new THREE.PointLight(0xffa040, 3.2, 6, 1.7);
   ember.position.set(0, R + 0.1, 0.5);
   root.add(ember);
-  const faceSpill = new THREE.SpotLight(0xffb050, 9, 8, 0.5, 0.75, 1.3);
+  const faceSpill = new THREE.SpotLight(0xffb050, 5, 7, 0.38, 0.8, 1.4);
   faceSpill.position.set(0, R, 0.6);
   faceSpill.target.position.set(0, 0, 4.2);
   root.add(faceSpill);
@@ -74,15 +74,15 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   root.add(halo);
   const pool = new THREE.Mesh(
     new THREE.CircleGeometry(R * 1.9, 40),
-    new THREE.MeshBasicMaterial({ map: glowTexture(), color: 0xff8a30, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false }),
+    new THREE.MeshBasicMaterial({ map: glowTexture(), color: 0xff8a30, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false }),
   );
   pool.rotation.x = -Math.PI / 2;
   pool.position.set(0, 0.015, 0.5);
   root.add(pool);
   // Contact shadow: a soft dark disc so the ball sits on the ground instead of floating in glow.
   const contact = new THREE.Mesh(
-    new THREE.CircleGeometry(R * 1.05, 40),
-    new THREE.MeshBasicMaterial({ map: glowTexture(), color: 0x000015, transparent: true, opacity: 0.55, depthWrite: false }),
+    new THREE.CircleGeometry(R * 1.25, 40),
+    new THREE.MeshBasicMaterial({ map: glowTexture(), color: 0x000015, transparent: true, opacity: 0.7, depthWrite: false }),
   );
   contact.rotation.x = -Math.PI / 2;
   contact.position.set(0, 0.02, 0.3);
@@ -116,7 +116,7 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   put('bush_a', -4.9, -2.7, 1.1, 1.2);
   put('grave_A', 4.2, -3.6, 0.25, 1);
   put('grave_B', -4.6, -3.9, -0.2, 1);
-  put('scarecrow', 3.4, -4.4, -0.2, 1.3);
+  put('scarecrow', 3.7, -5.0, -0.2, 1.1);
   put('post_lantern', -1.9, -4.4, Math.PI, 1);
   for (const x of [-10, -6, -2, 2, 6, 10]) put('fence_seperate', x, -5.2, 0);
   for (const x of [-8, -4, 0, 4, 8]) put('fence_pillar', x, -5.2, 0);
@@ -163,13 +163,14 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   mctx.fillStyle = mg; mctx.fillRect(0, 0, 128, 128);
   const moonTex = new THREE.CanvasTexture(moonC); moonTex.colorSpace = THREE.SRGBColorSpace;
   const moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, fog: false, transparent: true, depthWrite: false }));
-  moonSprite.position.set(-3.4, 5.9, -30); moonSprite.scale.setScalar(5.6);
+  moonSprite.position.set(-2.2, 6.6, -30); moonSprite.scale.setScalar(5.8);
   scene.add(moonSprite);
 
   // Lights: cool moon with hard shadows from the right-back, warm pools from the candles and lanterns.
-  scene.add(new THREE.HemisphereLight(0x5f6fe0, 0x1a1030, 0.8));
-  const moon = new THREE.DirectionalLight(0xc9d4ff, 3.2);
-  moon.position.set(-7, 7.5, -4);
+  scene.add(new THREE.HemisphereLight(0x5f6fe0, 0x1a1030, 0.42));
+  // Overhead moon, a touch behind the scene so every object drops a big pool of shadow at its feet.
+  const moon = new THREE.DirectionalLight(0xc9d4ff, 3.1);
+  moon.position.set(-1.5, 14, -3.5);
   scene.add(moon);
   if (renderer.shadowMap.enabled) {
     moon.castShadow = true;
@@ -190,14 +191,14 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   const warmL = new THREE.PointLight(0xffb060, 3.0, 5, 1.8); warmL.position.set(-2.75, 0.7, -0.3); root.add(warmL);
   const warmR = new THREE.PointLight(0xffb060, 2.8, 5, 1.8); warmR.position.set(2.6, 0.9, -0.3); root.add(warmR);
   const postL = new THREE.PointLight(0xffb060, 3.0, 7, 1.6); postL.position.set(-1.9, 2.6, -4.1); root.add(postL);
-  const fill = new THREE.DirectionalLight(0xffd6b0, 0.32);
+  const fill = new THREE.DirectionalLight(0xffd6b0, 0.22);
   fill.position.set(2.5, 1.5, 6);
   scene.add(fill);
 
   // Camera: low and frontal, the hero centred and a little above the frame's middle.
   const camera = new THREE.PerspectiveCamera(26, W / H, 0.1, 100);
-  camera.position.set(0, 1.85, 6.9);
-  camera.lookAt(0, 0.98, 0.3);
+  camera.position.set(0, 2.4, 6.9);
+  camera.lookAt(0, 0.92, 0.3);
   camera.updateMatrixWorld();
 
   const prevPR = renderer.getPixelRatio();
