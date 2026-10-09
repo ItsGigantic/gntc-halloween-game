@@ -37,6 +37,7 @@ Fonts: the UI uses system fonts. The brand fonts (TWK Lausanne, Reckless) are li
 | `?aspect=1:1` / `4:5` / `16:9` / `9:16` | letterbox the canvas for capture |
 | `?timescale=0.5` | slow motion |
 | `?mute=1` | start muted |
+| `?quality=low\|med\|high` | rendering tier (default med: 1.25x pixel ratio, 2x MSAA, 2 dynamic lights, 1536 shadow map at half rate). `?fps=120` lifts the 60 fps cap, `?hidpi=1` allows full retina |
 | `?og=1` | renders the Open Graph image (a staged scene, `src/ui/ogScene.ts`) and shows it; `window.__ogCanvas` holds it. Camera knobs: `ogy`, `ogz`, `ogfov`, `oglook` |
 
 `H` toggles the HUD in showcase or debug mode.
