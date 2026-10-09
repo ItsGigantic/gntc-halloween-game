@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { cloneModel, model } from '../assets/loader';
+import { cloneModel, model, materialOf } from '../assets/loader';
 import type { PostGrade } from '../game/grade';
 import { Player } from '../game/player';
 import { glowTexture, makeHalo } from '../game/glow';
@@ -19,15 +19,31 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   const root = new THREE.Group();
   scene.add(root);
 
-  // Ground: dirt tiles wide enough for the frame.
+  // Ground: dirt tiles wide enough for the frame, pulled down to a deep night blue so the
+  // warm sources read as the only light that matters.
+  const floorMat = materialOf('floor_dirt').clone();
+  floorMat.color.set(0x5a5c86);
   for (let i = -3; i <= 3; i++) {
     for (let j = -2; j <= 1; j++) {
       const t = cloneModel('floor_dirt');
+      t.traverse((o) => { if ((o as THREE.Mesh).isMesh) (o as THREE.Mesh).material = floorMat; });
       t.position.set(i * 4, -0.03, j * 4);
       t.rotation.y = ((i + j + 8) % 4) * Math.PI * 0.5;
       root.add(t);
     }
   }
+  // Sky: a gradient dome so the trees sit against a horizon glow instead of flat navy.
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(60, 24, 12),
+    new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false, fog: false,
+      uniforms: { uTop: { value: new THREE.Color(0x05041a) }, uHorizon: { value: new THREE.Color(0x3a2a6e) } },
+      vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+      fragmentShader: 'uniform vec3 uTop, uHorizon; varying vec3 vDir; void main(){ float h = vDir.y; float band = exp(-max(h,0.0)*5.0) * smoothstep(-0.1,0.02,h); gl_FragColor = vec4(mix(uTop, uHorizon, band*0.85), 1.0); }',
+    }),
+  );
+  sky.position.y = 0;
+  scene.add(sky);
   const put = (name: string, x: number, z: number, ry = 0, s = 1) => {
     const o = cloneModel(name);
     const inf = model(name);
@@ -41,7 +57,7 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   // The hero: a clean jack-o-lantern, facing the camera with a playful lean and a nod up.
   const R = 0.92;
   const hero = new Player();
-  (hero as unknown as { faceGlow: { value: number } }).faceGlow.value = 2.3;
+  (hero as unknown as { faceGlow: { value: number } }).faceGlow.value = 2.6;
   // A warmer shell for the poster shot so the orange reads against the moonlit backlight.
   hero.roll.traverse((o) => {
     const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
@@ -63,14 +79,14 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   const ember = new THREE.PointLight(0xffa040, 3.2, 6, 1.7);
   ember.position.set(0, R + 0.1, 0.5);
   root.add(ember);
-  const faceSpill = new THREE.SpotLight(0xffb050, 5, 7, 0.38, 0.8, 1.4);
+  const faceSpill = new THREE.SpotLight(0xffb050, 7, 7, 0.42, 0.85, 1.4);
   faceSpill.position.set(0, R, 0.6);
-  faceSpill.target.position.set(0, 0, 4.2);
+  faceSpill.target.position.set(0, 0, 3.2);
   root.add(faceSpill);
   root.add(faceSpill.target);
   const halo = makeHalo(0xff8a30, R * 2.5);
   halo.position.set(0, R, 0.3);
-  (halo.material as THREE.SpriteMaterial).opacity = 0.22;
+  (halo.material as THREE.SpriteMaterial).opacity = 0.26;
   root.add(halo);
   const pool = new THREE.Mesh(
     new THREE.CircleGeometry(R * 1.9, 40),
@@ -90,36 +106,50 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   root.add(contact);
 
   // Company: a small pumpkin leaning in at the hero's side, a bucket spilling candy on the other.
-  put('pumpkin_orange_small', -1.65, 0.85, 0.5, 1.0);
+  put('pumpkin_orange_small', -1.45, 0.55, 0.5, 1.0);
   put('candy_bucket_B_decorated', 1.75, 0.85, -0.5, 0.68);
 
   // Candy on the ground around them, all well inside the frame.
   for (const [n, x, z, ry, sc] of [
     ['candycorn', -0.95, 1.15, 0.8, 0.5], ['candy_pink_B', 0.95, 1.1, 2.4, 0.42], ['lollipop_orange', -1.95, 0.4, 0.3, 0.44],
     ['candy_green_B', 1.25, 0.45, 1.1, 0.42], ['candy_blue_A', -0.35, 1.35, 0.4, 0.42], ['candycorn', 2.05, 0.4, 2.0, 0.5],
-    ['candy_purple_A', -2.0, 1.2, 0.6, 0.42], ['candy_orange_A', 0.45, 1.4, 1.7, 0.42], ['candycorn', -2.35, 0.1, 0.2, 0.5],
-    ['candy_green_A', 2.2, 1.25, 0.9, 0.42], ['lollipop_pink', 1.75, 1.35, 2.9, 0.44], ['candy_pink_A', -1.45, 1.4, 0.3, 0.42],
+    ['candy_purple_A', -1.6, 1.6, 0.6, 0.42], ['candy_orange_A', 0.45, 1.4, 1.7, 0.42], ['candycorn', -2.35, 0.1, 0.2, 0.5],
+    ['candy_green_A', 2.2, 1.25, 0.9, 0.42], ['lollipop_pink', 1.75, 1.35, 2.9, 0.44], ['candy_pink_A', -2.3, 0.75, 0.3, 0.42],
     ['candy_blue_B', 1.15, 1.4, 2.2, 0.42], ['candy_purple_B', 1.85, 1.0, 1.4, 0.42], ['candycorn', 0.1, 1.1, 2.3, 0.5],
-    ['candy_orange_B', -2.4, 0.75, 2.6, 0.42], ['candy_brown_A', 2.45, 0.85, 1.3, 0.42], ['lollipop_blue', -2.15, 1.25, 1.6, 0.44],
-    ['bone_A', 2.3, 1.3, 1.9, 0.7], ['candy_green_C', -0.7, 1.5, 1.2, 0.42], ['candycorn', 1.5, 1.5, 0.6, 0.5],
+    ['candy_orange_B', -1.9, 0.75, 2.6, 0.42], ['candy_brown_A', 2.45, 0.85, 1.3, 0.42], ['lollipop_blue', -0.95, 1.55, 1.6, 0.44],
+    ['bone_A', 2.3, 1.3, 1.9, 0.7], ['candy_green_C', -0.7, 1.2, 1.2, 0.42], ['candycorn', 1.5, 1.2, 0.6, 0.5],
   ] as const) put(n, x, z, ry, sc);
 
-  // Mid ground: candles and a signpost on the left, a lantern, hay and a gravestone on the right.
-  put('candle_triple', -2.7, -0.6, 0.4, 0.9);
-  put('candle', -3.1, -0.1, 0, 0.8);
-  put('sign_both', -2.95, -2.1, 0.3, 0.72);
-  put('lantern_standing', 2.6, -0.3, 0.3, 0.95);
-  put('haybale', 4.2, -3.8, 0.35, 0.72);
-  put('gravestone', -3.4, -2.6, -0.2, 1);
-  put('skull', 3.3, 0.3, -0.6, 0.55);
-  put('bush_b', 4.3, -3.0, 0.2, 1.3);
-  put('bush_a', -4.9, -2.7, 1.1, 1.2);
-  put('grave_A', 4.2, -3.6, 0.25, 1);
-  put('grave_B', -4.6, -3.9, -0.2, 1);
-  put('scarecrow', 3.7, -5.0, -0.2, 1.1);
-  put('post_lantern', -1.9, -4.4, Math.PI, 1);
+  // Mid ground, left: a cluster of candles and a leaning marker. Right: a lantern, the skull
+  // with its warning glow, and a gravestone. The scarecrow watches from the back right.
+  put('candle_triple', -2.55, -0.5, 0.4, 0.95);
+  put('candle', -2.95, 0.05, 0, 0.85);
+  put('candle_melted', -2.2, 0.15, 1.2, 0.8);
+  put('bench', -3.2, -1.7, 0.55, 1.3);
+  put('lantern_standing', 2.4, -0.3, 0.3, 1);
+  put('skull', -2.3, 0.95, 0.5, 0.5);
+  put('gravestone', 3.5, -1.9, -0.25, 1);
+  put('rock_c', -3.9, -0.4, 1.2, 0.9);
+  put('bush_a', -4.7, -2.4, 1.1, 1.2);
+  put('bush_b', 4.6, -3.0, 0.2, 1.25);
+  put('grave_A', 4.3, -3.9, 0.25, 1);
+  put('grave_B', -4.4, -4.1, -0.2, 1);
+  put('scarecrow', 3.6, -5.2, -0.2, 1.1);
+  put('post_lantern', -1.8, -4.5, Math.PI, 1);
+  put('bare_tree_c', -5.8, -5.4, 0.5, 1.5);
   for (const x of [-10, -6, -2, 2, 6, 10]) put('fence_seperate', x, -5.2, 0);
   for (const x of [-8, -4, 0, 4, 8]) put('fence_pillar', x, -5.2, 0);
+  // The skull's purple warning glow, as in the game.
+  const skullGlow = new THREE.Mesh(
+    new THREE.CircleGeometry(0.95, 32),
+    new THREE.MeshBasicMaterial({ map: glowTexture(), color: 0xb86bff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }),
+  );
+  skullGlow.rotation.x = -Math.PI / 2;
+  skullGlow.position.set(-2.3, 0.012, 0.95);
+  root.add(skullGlow);
+  const skullLight = new THREE.PointLight(0xb86bff, 1.6, 3.5, 2);
+  skullLight.position.set(-2.3, 0.45, 0.95);
+  root.add(skullLight);
 
   // Fireflies: a scatter of tiny warm lights drifting over the yard.
   const ffGeo = new THREE.BufferGeometry();
@@ -163,7 +193,7 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   mctx.fillStyle = mg; mctx.fillRect(0, 0, 128, 128);
   const moonTex = new THREE.CanvasTexture(moonC); moonTex.colorSpace = THREE.SRGBColorSpace;
   const moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, fog: false, transparent: true, depthWrite: false }));
-  moonSprite.position.set(-2.2, 6.6, -30); moonSprite.scale.setScalar(5.8);
+  moonSprite.position.set(-4.4, 5.6, -30); moonSprite.scale.setScalar(6.2);
   scene.add(moonSprite);
 
   // Lights: cool moon with hard shadows from the right-back, warm pools from the candles and lanterns.
@@ -185,20 +215,23 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
       if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
     });
   }
-  const rim = new THREE.DirectionalLight(0x8a6cff, 1.8);
-  rim.position.set(5, 3, -6);
+  const rim = new THREE.DirectionalLight(0x8a6cff, 2.1);
+  rim.position.set(5, 3.5, -6);
   scene.add(rim);
-  const warmL = new THREE.PointLight(0xffb060, 3.0, 5, 1.8); warmL.position.set(-2.75, 0.7, -0.3); root.add(warmL);
-  const warmR = new THREE.PointLight(0xffb060, 2.8, 5, 1.8); warmR.position.set(2.6, 0.9, -0.3); root.add(warmR);
+  const warmL = new THREE.PointLight(0xffb060, 5.0, 5.5, 1.7); warmL.position.set(-2.6, 0.75, -0.2); root.add(warmL);
+  const warmR = new THREE.PointLight(0xffb060, 4.6, 5.5, 1.7); warmR.position.set(2.4, 0.9, -0.3); root.add(warmR);
   const postL = new THREE.PointLight(0xffb060, 3.0, 7, 1.6); postL.position.set(-1.9, 2.6, -4.1); root.add(postL);
   const fill = new THREE.DirectionalLight(0xffd6b0, 0.22);
   fill.position.set(2.5, 1.5, 6);
   scene.add(fill);
 
   // Camera: low and frontal, the hero centred and a little above the frame's middle.
-  const camera = new THREE.PerspectiveCamera(26, W / H, 0.1, 100);
-  camera.position.set(0, 2.4, 6.9);
-  camera.lookAt(0, 0.92, 0.3);
+  // Camera knobs for art direction via the URL: ?og=1&ogy=2&ogz=6.8&ogfov=26&oglook=0.95
+  const q = new URLSearchParams(location.search);
+  const num = (k: string, d: number) => { const v = Number(q.get(k)); return Number.isFinite(v) && q.get(k) !== null ? v : d; };
+  const camera = new THREE.PerspectiveCamera(num('ogfov', 26), W / H, 0.1, 100);
+  camera.position.set(0, num('ogy', 1.7), num('ogz', 6.7));
+  camera.lookAt(0, num('oglook', 0.9), 0.3);
   camera.updateMatrixWorld();
 
   const prevPR = renderer.getPixelRatio();
@@ -210,7 +243,12 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   renderer.clear();
   if (renderer.shadowMap.enabled) renderer.shadowMap.needsUpdate = true;
   grade.setSize(W, H);
+  // Poster grade: a little more contrast and a heavier vignette than in play, restored after.
+  const u = grade.material.uniforms;
+  const prevGrade = { c: u.uContrast.value as number, v: u.uVignette.value as number, e: u.uExposure.value as number, s: u.uSaturation.value as number };
+  u.uContrast.value = 1.24; u.uVignette.value = 0.62; u.uExposure.value = 0.9; u.uSaturation.value = 1.18;
   grade.render(renderer, scene, camera);
+  u.uContrast.value = prevGrade.c; u.uVignette.value = prevGrade.v; u.uExposure.value = prevGrade.e; u.uSaturation.value = prevGrade.s;
   const image = document.createElement('canvas');
   image.width = W;
   image.height = H;
