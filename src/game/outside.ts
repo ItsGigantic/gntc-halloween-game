@@ -118,6 +118,48 @@ export function buildOutside(parent: THREE.Object3D, rng: Rng): void {
   }
   for (const [name, x, z] of [['crypt', -95, 70], ['crypt', 110, -60], ['wagon_hay', 80, 95], ['arch', -70, -105]] as const) put(name, x, z, 4);
 
+  // Sky dome: the night fades to a faint violet-rose glow along the horizon so the far
+  // hills sit against something, instead of a flat navy. Drawn behind the stars, unfogged.
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(760, 32, 16),
+    new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false,
+      toneMapped: false,
+      uniforms: {
+        uTop: { value: new THREE.Color(0x07061c) },
+        uHorizon: { value: new THREE.Color(0x3b2a66) },
+        uWarm: { value: new THREE.Color(0x5a3a6a) },
+        uMoonDir: { value: new THREE.Vector3(-320, 0, -360).normalize() },
+      },
+      vertexShader: /* glsl */ `
+        varying vec3 vDir;
+        void main() {
+          vDir = normalize(position);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uTop, uHorizon, uWarm, uMoonDir;
+        varying vec3 vDir;
+        void main() {
+          float h = vDir.y;
+          // Tight band just above the horizon, trailing off into the zenith.
+          float band = exp(-max(h, 0.0) * 6.0) * smoothstep(-0.08, 0.02, h);
+          // A touch warmer toward the moon's side of the sky.
+          float side = 0.5 + 0.5 * dot(normalize(vec3(vDir.x, 0.0, vDir.z)), uMoonDir);
+          vec3 glow = mix(uHorizon, uWarm, side * 0.6);
+          vec3 c = mix(uTop, glow, band * 0.9);
+          gl_FragColor = vec4(c, 1.0);
+        }
+      `,
+    }),
+  );
+  sky.frustumCulled = false;
+  sky.renderOrder = -10;
+  group.add(sky);
+
   // Stars on a distant dome and a big moon.
   const starGeo = new THREE.BufferGeometry();
   const sp = new Float32Array(900 * 3);

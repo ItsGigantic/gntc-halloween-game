@@ -19,7 +19,7 @@ export class FollowCamera {
   private initialised = false;
 
   constructor(aspect: number) {
-    this.camera = new THREE.PerspectiveCamera(CONFIG.camera.fov, aspect, 0.1, 200);
+    this.camera = new THREE.PerspectiveCamera(CONFIG.camera.fov, aspect, 0.2, 1200);
   }
 
   /** Brief field-of-view punch on a big pickup. */
