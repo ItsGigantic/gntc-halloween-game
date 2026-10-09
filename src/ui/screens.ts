@@ -211,9 +211,9 @@ export class Screens {
       const pill = this.sizeEl.firstElementChild as HTMLElement;
       pill.querySelector('b')!.textContent = h.milestone;
       if (this.lastSize) {
-        pill.classList.remove('pop');
+        pill.classList.remove('swell');
         void pill.offsetWidth;
-        pill.classList.add('pop');
+        pill.classList.add('swell');
       }
       this.lastSize = h.milestone;
     }

@@ -63,6 +63,8 @@ export class Game {
   invuln = 0;
   /** Golden shield seconds left. */
   charge = 0;
+  private sparkT = 0;
+  private readonly sparkCol = new THREE.Color();
   candies = 0;
   items = 0;
   time = 0;
@@ -104,6 +106,17 @@ export class Game {
     if (this.invuln > 0) this.invuln -= dt;
     if (this.charge > 0) this.charge = Math.max(0, this.charge - dt);
     this.player.setCharged(this.charge > 0 ? this.charge / CONFIG.rules.powerSeconds : 0);
+    if (this.charge > 0) {
+      // Star trail: a steady spray of coloured sparks shed behind the ball.
+      this.sparkT -= dt;
+      if (this.sparkT <= 0) {
+        this.sparkT = 0.045;
+        const p = this.player;
+        this.sparkCol.setHSL((this.time * 1.5) % 1, 1, 0.65);
+        this.tmp.set(p.pos.x - p.vel.x * 0.06, p.pos.y, p.pos.z - p.vel.z * 0.06);
+        this.effects.burst(this.tmp, 2, this.sparkCol, 1.2 + p.radius, 2.5 + p.radius);
+      }
+    }
     if (this.comboTimer > 0) {
       this.comboTimer -= dt;
       if (this.comboTimer <= 0) this.decayCombo();

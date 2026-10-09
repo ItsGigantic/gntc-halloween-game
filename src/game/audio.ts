@@ -197,6 +197,9 @@ export const musicControl = {
   level(mult: number, seconds = 1.5): void {
     audio.music?.setLevel(mult, seconds);
   },
+  star(on: boolean): void {
+    audio.music?.setStar(on);
+  },
   progress(p: number): void {
     audio.music?.setProgress(p);
   },

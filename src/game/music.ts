@@ -29,6 +29,8 @@ export class Music {
   private playing = false;
   private bpm = BPM_MIN;
   private bpmTarget = BPM_MIN;
+  /** Star power: the waltz races and the arp line comes in full while it lasts. */
+  private starMode = false;
 
   /** Multiplier on the bed level: soft on the title screen, full in play. */
   private mult = 1;
@@ -47,6 +49,14 @@ export class Music {
 
   private beat(): number {
     return 60 / this.bpm;
+  }
+
+  setStar(on: boolean): void {
+    if (this.starMode === on) return;
+    this.starMode = on;
+    const t = this.engine.ctx.currentTime;
+    this.arpGain.gain.cancelScheduledValues(t);
+    this.arpGain.gain.setTargetAtTime(on ? 1 : this.intensity * 0.8, t, 0.25);
   }
 
   /** 0..1: adds a sparkling counter line as the combo heats up. */
@@ -98,7 +108,8 @@ export class Music {
     const ahead = this.engine.ctx.currentTime + 0.5;
     while (this.nextTime < ahead) {
       // Ease the tempo one bar at a time so changes are musical rather than sudden.
-      this.bpm += (this.bpmTarget - this.bpm) * 0.35;
+      const target = this.starMode ? Math.min(BPM_MAX * 1.45, this.bpmTarget * 1.45) : this.bpmTarget;
+      this.bpm += (target - this.bpm) * (this.starMode ? 0.7 : 0.35);
       this.scheduleBar(this.nextBar++, this.nextTime);
       this.nextTime += this.beat() * 3;
     }

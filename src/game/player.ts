@@ -65,11 +65,25 @@ export class Player {
     // inside can show through). Patch the shader so those dark cavity texels emit a warm glow,
     // as if lit by a candle inside; the orange skin and the brown stem are untouched.
     const lit = material().clone();
+    // A faint warm lift on the shell so the hero stays readable on its shadow side.
+    lit.emissive = new THREE.Color(0xff7a20);
+    lit.emissiveIntensity = 0.05;
     const glow = { value: 1.3 };
+    const star = { value: 0 };
+    const starT = { value: 0 };
     lit.onBeforeCompile = (shader) => {
       shader.uniforms.uFaceGlow = glow;
+      shader.uniforms.uStar = star;
+      shader.uniforms.uStarT = starT;
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform float uFaceGlow;')
+        .replace('#include <common>', '#include <common>\nuniform float uFaceGlow, uStar, uStarT;\nvec3 starHue(float h) { return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); }')
+        .replace('#include <map_fragment>', `#include <map_fragment>
+          if (uStar > 0.0) {
+            // Star power: the skin strobes through a palette, stepping like an old sprite flash.
+            float step = floor(uStarT * 9.0);
+            vec3 tint = starHue(fract(step / 6.0));
+            diffuseColor.rgb = mix(diffuseColor.rgb, tint * (0.55 + 0.45 * diffuseColor.rgb), uStar * 0.8);
+          }`)
         .replace(
           '#include <emissivemap_fragment>',
           `#include <emissivemap_fragment>
@@ -82,6 +96,8 @@ export class Player {
     };
     lit.customProgramCacheKey = () => 'jack-face-glow';
     this.faceGlow = glow;
+    this.star = star;
+    this.starT = starT;
     this.core.traverse((o) => {
       const m = o as THREE.Mesh;
       if (m.isMesh) {
@@ -119,6 +135,10 @@ export class Player {
   }
   private coreWrap: THREE.Group;
   private faceGlow: { value: number };
+  private star: { value: number };
+  private starT: { value: number };
+  private readonly starCol = new THREE.Color();
+  private readonly lightCol = new THREE.Color(0xffa040);
   private halo: THREE.Sprite;
   /** 0 when not shielded, else fraction of shield time left. */
   private charged = 0;
@@ -343,14 +363,24 @@ export class Player {
     this.faceGlow.value = 1.3 + 0.18 * Math.sin(performance.now() * 0.011) + 0.08 * Math.sin(performance.now() * 0.037) + 2.2 * this.power;
     this.light.intensity *= 1 + 1.5 * this.power;
     if (this.charged > 0) {
-      // Shielded: a warm gold aura and a brighter face; it blinks in the last fifth, like a star running out.
-      const ending = this.charged < 0.2 && Math.floor(performance.now() / 110) % 2 === 0;
-      this.halo.visible = !ending;
-      (this.halo.material as THREE.SpriteMaterial).opacity = 0.42 + 0.14 * Math.sin(performance.now() * 0.012);
-      this.faceGlow.value += 1.0;
-      this.light.intensity *= 1.6;
-    } else if (this.halo.visible) {
+      // Star power: the skin strobes through colours, the inner light and aura cycle with it,
+      // and it all slows to a blink in the last fifth as it runs out.
+      const ending = this.charged < 0.2;
+      this.starT.value += dt * (ending ? 0.45 : 1);
+      this.star.value = ending && Math.floor(this.starT.value * 9) % 2 === 0 ? 0 : 1;
+      const hue = (Math.floor(this.starT.value * 9) % 6) / 6;
+      this.starCol.setHSL(hue, 1, 0.6);
+      this.halo.visible = this.star.value > 0;
+      (this.halo.material as THREE.SpriteMaterial).color.copy(this.starCol);
+      (this.halo.material as THREE.SpriteMaterial).opacity = 0.5;
+      this.light.color.copy(this.starCol).lerp(this.lightCol, 0.35);
+      this.faceGlow.value += 1.2;
+      this.light.intensity *= 1.8;
+    } else if (this.star.value > 0 || this.halo.visible) {
+      this.star.value = 0;
       this.halo.visible = false;
+      this.light.color.copy(this.lightCol);
+      (this.halo.material as THREE.SpriteMaterial).color.set(0xffd36b);
     }
   }
 }

@@ -211,6 +211,7 @@ function buildWorld(): void {
     onHud: (h) => {
       if (hudVisible) screens.updateHud(h);
       musicControl.intensity((h.multiplier - 1) / 4);
+      musicControl.star(h.charge > 0);
       musicControl.progress((h.radius - CONFIG.player.startRadius) / (6.5 - CONFIG.player.startRadius));
     },
     onMilestone: (label) => {
@@ -419,6 +420,9 @@ function frame(now: number): void {
   effects.update(dt);
   if (SHADOWS) renderer.shadowMap.needsUpdate = true;
   grade.tick(now / 1000);
+  // The grade pass does two renders (scene, then the quad); count the whole frame, not the last call.
+  renderer.info.autoReset = false;
+  renderer.info.reset();
   grade.render(renderer, scene, follow.camera);
   mainCalls = renderer.info.render.calls;
   mainTris = renderer.info.render.triangles;

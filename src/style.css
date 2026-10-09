@@ -104,7 +104,7 @@ html, body {
 .size small { font: 500 14px/1 var(--font-sans); color: rgba(255,255,255,.7); }
 .size b { font: 400 26px/1 var(--font-spooky); letter-spacing: .03em; color: var(--accent-soft);
   text-shadow: 0 2px 0 rgba(0,0,21,.8), 0 0 18px rgba(255,118,2,.45); }
-.size span.pop { animation: sizepop .7s cubic-bezier(.34,1.56,.64,1); }
+.size span.swell { animation: sizepop .7s cubic-bezier(.34,1.56,.64,1); }
 @keyframes sizepop { 0% { transform: scale(1); } 20% { transform: scale(1.22); background: rgba(255,118,2,.35); border-color: var(--accent); } 100% { transform: scale(1); } }
 .icon-btn { position: absolute; right: calc(var(--edge) + env(safe-area-inset-right)); top: calc(var(--edge) + env(safe-area-inset-top)); width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--glass-line); background: rgba(0,0,21,.58); color: #fff; cursor: pointer; pointer-events: auto !important; display: grid; place-items: center; }
 .icon-btn svg { width: 22px; height: 22px; }
