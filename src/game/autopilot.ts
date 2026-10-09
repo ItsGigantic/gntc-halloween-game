@@ -52,7 +52,7 @@ export class Autopilot {
       return;
     }
     if (!this.target || this.target.state !== 'free' || this.retarget <= 0) {
-      this.retarget = 0.6;
+      this.retarget = 0.9;
       this.target = this.pick();
     }
     if (fleeing) this.dir.set(fleeX, 0, fleeZ);
@@ -102,6 +102,17 @@ export class Autopilot {
     return false;
   }
 
+  /** True when a live skull sits close enough to the spot that the repel steering would never let us reach it. */
+  private guarded(x: number, z: number, r: number): boolean {
+    const near = this.world.hash.query(x, z, r + 4, this.near);
+    for (const e of near) {
+      if (e.state !== 'free' || e.def.kind !== 'skull') continue;
+      if (r > e.pickRadius * CONFIG.rules.crushRatio) continue;
+      if (Math.hypot(e.x - x, e.z - z) < r + e.pickRadius * 1.6 + 1.6) return true;
+    }
+    return false;
+  }
+
   private repel(x: number, z: number, range: number): void {
     const p = this.player;
     this.tmp.set(p.pos.x - x, 0, p.pos.z - z);
@@ -122,8 +133,12 @@ export class Autopilot {
       if (this.banned.has(e)) continue;
       const d = Math.hypot(e.x - p.pos.x, e.z - p.pos.z);
       if (d > 26 || this.blockedLine(p.pos.x, p.pos.z, e.x, e.z, p.radius)) continue;
+      if (!power && this.guarded(e.x, e.z, p.radius)) continue;
       // Prefer close, valuable things; bigger things matter more as we grow. The shield is worth a detour.
-      const s = (power ? 4000 : e.def.points + e.volume * 40) / (1 + d * 0.9);
+      let s = (power ? 4000 : e.def.points + e.volume * 40) / (1 + d * 0.9);
+      // Hysteresis: the current target keeps a 40% edge so two similar options can't make the
+      // ball flip-flop between them without ever reaching either.
+      if (e === this.target) s *= 1.4;
       if (s > bestScore) { bestScore = s; best = e; }
     }
     return best;
