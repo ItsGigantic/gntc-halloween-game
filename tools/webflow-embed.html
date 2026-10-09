@@ -1,0 +1,26 @@
+<!--
+  Webflow page: itsgigantic.com/halloween
+  Single Embed element: paste everything below into one Embed on a blank page.
+  Title, meta description, Open Graph tags and schema go in the page's SEO settings / head code.
+  The game detects it is framed and posts analytics events here via postMessage
+  (type "gigantic-gourd"); the script forwards them to dataLayer so GTM/GA4 see them.
+-->
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000015; overscroll-behavior: none; }
+  .gourd-frame { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; border: 0; display: block; background: #000015; z-index: 10; }
+</style>
+<iframe
+  class="gourd-frame"
+  src="https://itsgigantic.github.io/gntc-halloween-game/"
+  title="Gigantic Gourd"
+  allow="web-share; autoplay; fullscreen"
+  referrerpolicy="strict-origin-when-cross-origin"
+  loading="eager"
+></iframe>
+<script>
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.type !== 'gigantic-gourd') return;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(Object.assign({ event: e.data.event }, e.data.params || {}));
+  });
+</script>

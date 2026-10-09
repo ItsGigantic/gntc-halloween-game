@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#000015" />
+    <meta name="description" content="Roll a jack-o-lantern through a haunted graveyard, eat candy, dodge skulls and grow gigantic. A free browser game from Gigantic. Beat our score before Halloween." />
+    <link rel="icon" href="/brand/icon.svg" type="image/svg+xml" />
+    <title>Gigantic Gourd | A Halloween game by Gigantic</title>
+    <meta property="og:title" content="Gigantic Gourd: eat candy, dodge skulls, get gigantic" />
+    <meta property="og:description" content="Roll a jack-o-lantern through a haunted graveyard and grow until you can eat the crypt. A free Halloween game from Gigantic. Can you beat our score?" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.itsgigantic.com/halloween" />
+    <meta property="og:site_name" content="Gigantic" />
+    <meta property="og:image" content="https://itsgigantic.github.io/gntc-halloween-game/brand/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A candy-covered jack-o-lantern rolling through a moonlit graveyard. Gigantic Gourd: eat candy, dodge skulls, get gigantic." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Gigantic Gourd: eat candy, dodge skulls, get gigantic" />
+    <meta name="twitter:description" content="A free Halloween game from Gigantic. Roll, grow, and beat our score before Halloween." />
+    <meta name="twitter:image" content="https://itsgigantic.github.io/gntc-halloween-game/brand/og.jpg" />
+    <style>
+      /* Shown until the models and fonts are in; removed by the game once the title is ready. */
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #000015; color: #ffb27a; font: 500 15px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; letter-spacing: .02em; z-index: 50; transition: opacity .35s; }
+      #loading.off { opacity: 0; pointer-events: none; }
+      #loading i { display: inline-block; width: 10px; height: 10px; margin-right: 10px; border-radius: 50%; background: #ff7602; animation: ld 1s ease-in-out infinite; vertical-align: -1px; }
+      @keyframes ld { 0%, 100% { transform: scale(.6); opacity: .5; } 50% { transform: scale(1); opacity: 1; } }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="game"></canvas>
+      <div id="ui"></div>
+    </div>
+    <div id="loading" aria-live="polite"><span><i></i>Carving the pumpkin</span></div>
+    <script>
+      // Loading fallbacks: a slow connection gets a nudge, and a browser that can't start the game
+      // (no WebGL, a failed download) gets a plain message instead of an endless spinner.
+      (function () {
+        function say(msg) {
+          var l = document.getElementById('loading');
+          if (l) l.querySelector('span').innerHTML = msg + ' <a href="" style="color:#fff">Try again</a>';
+        }
+        setTimeout(function () { say('Still carving. This is taking longer than usual.'); }, 20000);
+        window.__gourdFail = function () { say('This browser couldn\'t start the game.'); };
+        window.addEventListener('error', function () { window.__gourdFail(); });
+      })();
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

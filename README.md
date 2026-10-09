@@ -1,0 +1,80 @@
+# Gigantic Gourd
+
+A tiny katamari-style Halloween game: a jack-o-lantern rolls through a graveyard eating candy, growing as it goes. Three skull hits and you get a tombstone you can share. Built for Gigantic as a seasonal promo.
+
+## Run it
+
+```bash
+npm install
+npm run assets     # merges the models in assets-src/ into public/assets/halloween.glb (only needed after changing tools/build-assets.mjs)
+npm run dev        # http://localhost:5173
+```
+
+Desktop: WASD / arrows, or drag with the mouse; Space hops; Esc or P pauses (the game also pauses itself when the tab or window loses focus). Mobile: drag anywhere, tap Hop. A golden shield drops in now and then: grab it for a few seconds of invincibility and one skull back.
+
+## Build and host
+
+Every push to `main` deploys a test build to GitHub Pages at https://itsgigantic.github.io/gntc-halloween-game/ (see `.github/workflows/pages.yml`). For the real thing, two routes, same build:
+
+1. **On the Astro site (recommended).** `npm run build:site` builds with base path `/halloween/`. Copy `dist/` to the Astro project's `public/halloween/` and the game lives at `itsgigantic.com/halloween` with no iframe.
+2. **Framed on Webflow (current plan).** The GitHub Pages build is embedded on the Webflow page `itsgigantic.com/halloween` with a full-viewport iframe. The exact snippet, page settings and the analytics bridge are in `tools/webflow-embed.html`. The iframe needs `allow="web-share"` so the share sheet works on phones.
+
+Set the share URL in `src/config.ts` (`GAME_URL`) if the final path differs.
+
+Analytics: the game pushes `gourd_start`, `gourd_game_over`, `gourd_tombstone_download`, `gourd_share` and `gourd_cta_click` to `window.dataLayer`, and posts the same events to the parent window when framed.
+
+Fonts: the UI uses system fonts. The brand fonts (TWK Lausanne, Reckless) are licensed to the Gigantic site, so only add them if the game is served from itsgigantic.com; the CSS variables in `src/style.css` are ready for them.
+
+## URL flags
+
+| Flag | Effect |
+|---|---|
+| `?debug=1` | `R` restarts, `H` toggles the HUD, `window.__dbg` handles |
+| `?stats=1` | fps / draw-call overlay |
+| `?seed=123` | deterministic world layout |
+| `?autopilot=1` | the pumpkin steers itself (the title screen uses this too) |
+| `?showcase=1` | no title, no HUD, no joystick: clean capture |
+| `?aspect=1:1` / `4:5` / `16:9` / `9:16` | letterbox the canvas for capture |
+| `?timescale=0.5` | slow motion |
+| `?mute=1` | start muted |
+| `?quality=low\|med\|high` | rendering tier (default med: 1.25x pixel ratio, 2x MSAA, 2 dynamic lights, 1536 shadow map at half rate). `?fps=120` lifts the 60 fps cap, `?hidpi=1` allows full retina |
+| `?social=1` | renders the 4:5 animated harvest scene (`src/ui/socialScene.ts`, 1080×1350, seamless 5 s loop); `window.__social.frame(t)` returns the canvas for time t. Camera knobs: `sy`, `sz`, `sfov`, `slook`; sun: `smx`, `smy`, `sms`; `nograin=1` for GIF frames; `look=base|film|rich` picks the colour grade, `skydark=` darkens the sky; `paint=1` adds the optional painterly finish (`src/ui/painterly.ts`) and `strokes=1` brush strokes over it (`src/ui/strokes.ts`) |
+| `?og=1` | renders the Open Graph image (a staged scene, `src/ui/ogScene.ts`) and shows it; `window.__ogCanvas` holds it. Camera knobs: `ogy`, `ogz`, `ogfov`, `oglook` |
+
+`H` toggles the HUD in showcase or debug mode.
+
+## Social assets
+
+1. Open e.g. `http://localhost:5173/?showcase=1&autopilot=1&aspect=1:1&seed=7` and size the browser window.
+2. Record with macOS screen recording (Cmd+Shift+5).
+3. `tools/make-social.sh recording.mov launch 3 12` writes `social/launch.mp4` and `social/launch.gif`.
+
+LinkedIn feed posts don't animate uploaded GIFs: post the MP4, keep the GIF for Giphy or other channels.
+
+PS1 mode: add `psx=1` to either scene for a PlayStation-style render (`src/ui/psx.ts`): a 267×334 framebuffer, 15-bit colour with the console's dither, vertex snapping, affine textures, no anti-aliasing, blob shadows and a stepped camera drift. Encode by upscaling the frames 3× with nearest-neighbour before adding the copy.
+
+Behind-the-scenes stills: add `bts=aerial|over|top|side` to either scene to view the set from outside, with the post camera and its framing drawn in (`src/ui/bts.ts`).
+
+Post GIFs: render the 100 frames with `window.__social.frame(i / 20)` (or `__holiday`) using `?nograin=1`, then `tools/post-gif.sh` adds grain under the copy layer and encodes at 800px.
+
+The holiday loop lives on its own dev page, `holiday.html` (`src/holiday/`), built from the KayKit Holiday Bits models in `assets-src/holiday-bits`. It is not part of the game build. `window.__holiday.frame(t)` returns the 1080×1350 canvas for time t, with the same `nograin=1` option.
+
+## Tuning
+
+Everything balance-related lives in `src/config.ts` and the item catalog in `src/game/items.ts` (points, pickup radii, spawn weights, size milestones). `GROWTH`, `maxGainFrac` and `gainSlope` control how fast the pumpkin grows; `powerSeconds` / `powerFirstAt` the shield. `taperFrom` / `maxRadius` stop the ball outgrowing the arena past GIGANTIC.
+
+Playtest harness: `?debug=1&autopilot=1&timescale=2&seed=N` plus `window.__dbg` (game, player, world, spawner). Note the handles are rebuilt on every run start, so re-read `window.__dbg` after `startRun`.
+
+## Project layout
+
+- `src/` game code (Vite + TypeScript + Three.js); `src/holiday/` the holiday social scene
+- `holiday.html` dev page for the holiday social scene
+- `public/` static files: the merged glb, brand marks, fonts
+- `assets-src/` the glTF source files the build uses, copied from the KayKit packs with their licences
+- `tools/` the asset merge script and the social export script
+- `_packs/` (ignored) the full KayKit downloads, kept locally only
+
+## Credits
+
+Models: KayKit Halloween Bits, Holiday Bits, Forest Nature Pack and Dungeon Pack (all CC0) by Kay Lousberg. Fonts: Bebas Neue, Creepster and DotGothic16 (SIL OFL, licences in `public/fonts`). Sound: all music and effects are synthesised with the Web Audio API (no audio files); `window.__audioTest()` in `?debug=1` renders them offline and reports levels. Engine: Three.js.
+
