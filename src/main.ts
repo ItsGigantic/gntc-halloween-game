@@ -481,6 +481,11 @@ async function boot(): Promise<void> {
   };
   logo.src = `${BASE}brand/logo-halloween.png`;
   await Promise.all([loadModels(`${BASE}assets/halloween.glb`), document.fonts.load('48px "DotGothic16"').catch(() => null), document.fonts.load('100px "Creepster"').catch(() => null), document.fonts.load('700 100px "Cinzel"').catch(() => null), document.fonts.load('italic 400 60px "EB Garamond"').catch(() => null)]);
+  const loading = document.getElementById('loading');
+  if (loading) {
+    loading.classList.add('off');
+    setTimeout(() => loading.remove(), 400);
+  }
   player = new Player();
   player.setBlobShadow(!SHADOWS);
   scene.add(player.root);

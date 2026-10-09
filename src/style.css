@@ -234,3 +234,18 @@ html, body {
 @media (max-width: 560px) and (pointer: coarse) {
   #jumpBtn { right: calc(var(--edge) + env(safe-area-inset-right)); bottom: calc(var(--edge) + 232px + env(safe-area-inset-bottom)); }
 }
+/* Short viewports (phones in landscape): keep the title card on one screen and lift Hop clear of the skull row. */
+@media (max-height: 460px) {
+  .card { padding: 14px 20px 14px; border-radius: 18px; }
+  .card .mark { width: 44px; height: 44px; margin-bottom: 2px; }
+  .card h1 { font-size: 34px; line-height: 1; margin: 2px 0 6px; }
+  .card .tag { font-size: 14px; margin-bottom: 8px; }
+  .card label { margin-bottom: 4px; }
+  .card .hint { display: none; }
+  .best { margin-top: 8px; }
+  .credit { margin-top: 8px; }
+  #stone { width: min(150px, 34vh); }
+}
+@media (max-height: 460px) and (pointer: coarse) {
+  #jumpBtn { bottom: calc(var(--edge) + 150px + env(safe-area-inset-bottom)); width: 60px; height: 60px; }
+}

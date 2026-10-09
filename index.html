@@ -7,12 +7,25 @@
     <meta name="description" content="A small Halloween game from Gigantic. Eat candy, avoid skulls, grow." />
     <link rel="icon" href="/brand/icon.svg" type="image/svg+xml" />
     <title>Gigantic Gourd</title>
+    <meta property="og:title" content="Gigantic Gourd" />
+    <meta property="og:description" content="Roll a jack-o-lantern through the graveyard, eat candy, dodge skulls, get gigantic. A Halloween game from Gigantic." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://www.itsgigantic.com/halloween/brand/logo-halloween.png" />
+    <meta name="twitter:card" content="summary" />
+    <style>
+      /* Shown until the models and fonts are in; removed by the game once the title is ready. */
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #000015; color: #ffb27a; font: 500 15px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; letter-spacing: .02em; z-index: 50; transition: opacity .35s; }
+      #loading.off { opacity: 0; pointer-events: none; }
+      #loading i { display: inline-block; width: 10px; height: 10px; margin-right: 10px; border-radius: 50%; background: #ff7602; animation: ld 1s ease-in-out infinite; vertical-align: -1px; }
+      @keyframes ld { 0%, 100% { transform: scale(.6); opacity: .5; } 50% { transform: scale(1); opacity: 1; } }
+    </style>
   </head>
   <body>
     <div id="app">
       <canvas id="game"></canvas>
       <div id="ui"></div>
     </div>
+    <div id="loading" aria-live="polite"><span><i></i>Carving the pumpkin</span></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
