@@ -75,7 +75,7 @@ export class Screens {
           <h1>Gigantic<br />Gourd</h1>
           <p class="tag">Roll around the graveyard eating candy, and steer clear of the skulls.</p>
           <label class="name"><span class="label">Name</span>
-            <input id="name" type="text" maxlength="16" autocomplete="nickname" placeholder="Your name" enterkeyhint="go" /></label>
+            <input id="name" type="text" maxlength="16" autocomplete="off" data-1p-ignore data-lpignore="true" data-bwignore placeholder="Your name" enterkeyhint="go" /></label>
           <button id="play" class="btn">Play</button>
           <p id="best" class="best"></p>
           <p class="hint">${IS_TOUCH ? 'Drag anywhere to move, tap Hop to jump.' : 'Move with WASD, the arrow keys, or by dragging. Space to hop.'} Three skull hits and it's over.</p>
