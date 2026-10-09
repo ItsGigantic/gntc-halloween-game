@@ -201,7 +201,9 @@ export class Game {
         continue;
       }
       if (e.pickRadius <= p.radius * ratio) {
-        if (d < p.radius + e.pickRadius * 0.7) this.pickup(e);
+        // Candy gets a little extra reach: skimming past a sweet at speed should still count.
+        const reach = e.def.kind === 'candy' ? 0.1 + p.radius * 0.06 : 0;
+        if (d < p.radius + e.pickRadius * 0.7 + reach) this.pickup(e);
       } else if (d < p.radius + e.collideRadius) {
         this.pushOut(dx, dz, d, p.radius + e.collideRadius);
       }

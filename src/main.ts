@@ -248,7 +248,7 @@ function buildWorld(): void {
   effects.clear();
   follow.snapBehind(player.pos, player.radius);
   if (FLAGS.debug) {
-    (window as unknown as { __dbg: unknown }).__dbg = { game, player, world, spawner, startRun, beginDeath, audio, renderer, step: stepHeadless, flags: FLAGS };
+    (window as unknown as { __dbg: unknown }).__dbg = { game, player, world, spawner, startRun, beginDeath, audio, renderer, step: stepHeadless, flags: FLAGS, autopilot };
     (window as unknown as { __audioTest: unknown }).__audioTest = async () => (await import('./game/audioTest')).runAudioTest(audio.master);
   }
 }
