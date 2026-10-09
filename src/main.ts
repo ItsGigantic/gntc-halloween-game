@@ -493,7 +493,7 @@ async function boot(): Promise<void> {
   buildOutside(scene, new Rng(FLAGS.seed || 1));
   resize();
   if (FLAGS.og) {
-    const c = await renderOgScene(renderer, grade, `${BASE}brand/logo-halloween.png`);
+    const c = await renderOgScene(renderer, grade, `${BASE}brand/wordmark-white.svg`);
     (window as unknown as { __ogCanvas: HTMLCanvasElement }).__ogCanvas = c;
     const img = document.createElement('img');
     img.id = 'cardPreview';

@@ -38,26 +38,8 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   };
 
   // The hero: a fresh ball with a handful of candy stuck on, facing the camera, tipped up a touch.
-  const R = 0.78;
+  const R = 0.86;
   const hero = new Player();
-  const candy: [string, number, number, number][] = [
-    ['candy_pink_A', 0.5, 0.55, 0.65], ['lollipop_green', -0.55, 0.5, 0.65], ['candycorn', 0.2, 0.9, 0.4],
-    ['candy_blue_B', -0.7, -0.2, 0.7], ['candy_orange_A', 0.75, -0.1, 0.65], ['lollipop_pink', 0.35, -0.6, 0.7],
-    ['candy_purple_B', -0.3, -0.75, 0.6], ['candy_green_A', -0.85, 0.3, -0.4], ['candycorn', 0.9, 0.35, -0.2],
-    ['candy_orange_B', -0.1, 0.4, -0.9], ['lollipop_blue', 0.6, 0.7, -0.4], ['candy_brown_A', -0.6, -0.5, -0.6],
-    ['candy_blue_A', 0.15, -0.3, 0.95], ['candy_green_C', -0.95, 0.55, 0.3], ['candycorn', -0.4, 0.95, -0.1],
-    ['candy_pink_B', 0.95, -0.4, 0.35], ['candy_purple_A', -0.75, -0.65, 0.2], ['lollipop_purple', 0.3, 0.3, -1.0],
-    ['candy_blue_B', 0.55, 0.75, 0.4], ['candy_green_B', -0.5, 0.8, 0.5], ['candy_pink_A', 0.1, 0.98, 0.25],
-    ['candy_orange_A', -0.8, 0.45, 0.6], ['candy_purple_B', 0.85, 0.5, 0.2], ['candy_brown_B', -0.2, 0.7, 0.75],
-  ];
-  for (const [name, x, y, z] of candy) {
-    const obj = cloneModel(name);
-    const inf = model(name);
-    const cs = name.startsWith('lollipop') ? 0.42 : name === 'candycorn' ? 0.5 : 0.48;
-    obj.scale.setScalar(cs);
-    const dir = new THREE.Vector3(x, y, z).normalize();
-    hero.attach(obj, dir.clone().multiplyScalar(hero.radius).add(hero.pos), inf.radius * cs, 0, 0, 'candy', name);
-  }
   hero.setRadius(hero.radius); // keep the start radius; growth is visual only here
   const ball = new THREE.Group();
   ball.add(hero.roll);
@@ -69,23 +51,27 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   ember.position.set(0, R + 0.1, 0.2);
   root.add(ember);
 
-  // Foreground candy on the ground, left and right of the hero.
-  for (const [n, x, z, ry, s] of [
-    ['candycorn', -1.1, 1.3, 0.8, 0.55], ['candy_pink_B', 1.3, 1.2, 2.4, 0.45], ['lollipop_orange', -1.9, 0.6, 0.3, 0.5],
-    ['candy_green_B', 0.9, 1.8, 1.1, 0.45], ['candy_blue_A', -0.5, 2.0, 0.4, 0.45], ['candycorn', 1.9, 0.8, 2.0, 0.55],
-    ['bone_A', -2.4, 1.5, 1.9, 0.8], ['candy_purple_A', 2.5, 1.4, 0.6, 0.45], ['lollipop_pink', -1.1, 2.4, 2.9, 0.5],
-    ['candy_orange_A', 0.3, 2.5, 1.7, 0.45], ['candycorn', -2.9, 1.1, 0.2, 0.55], ['candy_green_A', 2.1, 2.3, 0.9, 0.45],
-  ] as const) put(n, x, z, ry, s);
+  // Candy on the ground: a loose ring around the hero, kept clear of the wordmark's patch
+  // at the bottom centre, and small enough near the camera not to compete with the pumpkin.
+  for (const [n, x, z, ry, sc] of [
+    ['candycorn', -1.0, 0.85, 0.8, 0.55], ['candy_pink_B', 1.35, 0.9, 2.4, 0.45], ['lollipop_orange', -1.7, 0.4, 0.3, 0.46],
+    ['candy_green_B', 1.3, 0.5, 1.1, 0.45], ['candy_blue_A', -1.55, 1.25, 0.4, 0.45], ['candycorn', 1.8, 0.2, 2.0, 0.55],
+    ['lollipop_pink', 2.1, 1.05, 2.9, 0.46], ['candy_purple_A', -2.15, 0.95, 0.6, 0.45], ['candy_orange_A', 2.5, 1.5, 1.7, 0.45],
+    ['candycorn', -2.2, 0.0, 0.2, 0.55], ['candy_green_A', 2.35, 0.65, 0.9, 0.45], ['lollipop_blue', -2.5, 1.5, 1.6, 0.46],
+    ['candy_pink_A', -1.1, 1.85, 0.3, 0.45], ['candy_blue_B', -0.5, 1.25, 2.2, 0.42], ['candy_purple_B', 0.7, 1.25, 1.4, 0.42],
+    ['candycorn', 1.0, 1.9, 1.0, 0.55], ['candy_orange_B', -1.8, 1.85, 2.6, 0.45], ['lollipop_green', 2.6, -0.15, 0.7, 0.46],
+    ['candy_brown_A', -2.7, 0.55, 1.3, 0.45], ['bone_A', 2.9, 1.65, 1.9, 0.75], ['candycorn', 0.15, 1.25, 2.3, 0.5],
+  ] as const) put(n, x, z, ry, sc);
 
   // Mid ground: candles and a little pumpkin left, a lantern post and gravestone right.
-  put('candle_triple', -2.0, -0.3, 0.4, 0.9);
-  put('candle', -2.45, 0.2, 0, 0.8);
-  put('pumpkin_orange_small', -2.9, -0.5, 0.6, 1.0);
-  put('lantern_standing', 2.15, -0.25, 0.3, 0.95);
+  put('candle_triple', -1.85, -0.4, 0.4, 0.9);
+  put('candle', -2.3, 0.1, 0, 0.8);
+  put('pumpkin_orange_small', -2.7, -0.7, 0.6, 1.0);
+  put('lantern_standing', 2.0, -0.35, 0.3, 0.95);
   put('gravestone', 3.2, -1.8, -0.3, 1);
   put('grave_A', -3.9, -2.8, 0.25, 1);
   put('grave_B', 4.3, -3.3, -0.2, 1);
-  put('skull', 3.1, 0.1, -0.6, 0.55);
+  put('skull', 2.75, 0.25, -0.6, 0.55);
   put('rock_c', -3.6, 0.3, 1.2);
   put('bush_b', 5.6, -1.6, 0.2, 1.4);
   put('post_lantern', 2.0, -4.3, Math.PI, 1);
@@ -119,7 +105,7 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   mctx.fillStyle = mg; mctx.fillRect(0, 0, 128, 128);
   const moonTex = new THREE.CanvasTexture(moonC); moonTex.colorSpace = THREE.SRGBColorSpace;
   const moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: moonTex, fog: false, transparent: true, depthWrite: false }));
-  moonSprite.position.set(-1.0, 5.6, -30); moonSprite.scale.setScalar(5.2);
+  moonSprite.position.set(-1.2, 5.0, -30); moonSprite.scale.setScalar(5.2);
   scene.add(moonSprite);
 
   // Lights: cool moon with hard shadows from the right-back, warm pools from the candles and lanterns.
@@ -143,17 +129,17 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   const rim = new THREE.DirectionalLight(0x6a7cff, 0.9);
   rim.position.set(-3, 4, -6);
   scene.add(rim);
-  const warmL = new THREE.PointLight(0xffb060, 3.2, 5.5, 1.8); warmL.position.set(-2.1, 0.7, 0.1); root.add(warmL);
-  const warmR = new THREE.PointLight(0xffb060, 3.0, 5.5, 1.8); warmR.position.set(2.15, 0.9, -0.2); root.add(warmR);
+  const warmL = new THREE.PointLight(0xffb060, 3.2, 5.5, 1.8); warmL.position.set(-1.95, 0.7, 0.0); root.add(warmL);
+  const warmR = new THREE.PointLight(0xffb060, 3.0, 5.5, 1.8); warmR.position.set(2.0, 0.9, -0.3); root.add(warmR);
   const postL = new THREE.PointLight(0xffb060, 3.0, 7, 1.6); postL.position.set(2.0, 2.6, -4.0); root.add(postL);
   const fill = new THREE.DirectionalLight(0xffe6c8, 0.9);
   fill.position.set(0, 2, 6);
   scene.add(fill);
 
   // Camera: low and frontal, the hero centred and a little above the frame's middle.
-  const camera = new THREE.PerspectiveCamera(27, W / H, 0.1, 100);
-  camera.position.set(0, 2.4, 9.2);
-  camera.lookAt(0, 0.95, 0.2);
+  const camera = new THREE.PerspectiveCamera(25, W / H, 0.1, 100);
+  camera.position.set(0, 2.0, 6.4);
+  camera.lookAt(0, 1.0, 0.2);
   camera.updateMatrixWorld();
 
   const prevPR = renderer.getPixelRatio();
@@ -176,7 +162,7 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   renderer.setClearColor(0x000000, prevClear);
   scene.clear();
 
-  // The logo, centred along the bottom on a soft dark footing so it reads on any crop.
+  // The wordmark, centred along the bottom on a soft dark footing so it reads on any crop.
   const logo = await new Promise<HTMLImageElement | null>((res) => {
     const i = new Image();
     i.onload = () => res(i);
@@ -189,9 +175,9 @@ export async function renderOgScene(renderer: THREE.WebGLRenderer, grade: PostGr
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
   if (logo) {
-    const lh = 124;
-    const lw = (logo.width / logo.height) * lh;
-    ctx.drawImage(logo, (W - lw) / 2, H - lh - 34, lw, lh);
+    const lw = 340;
+    const lh = (logo.height / logo.width) * lw;
+    ctx.drawImage(logo, (W - lw) / 2, H - lh - 40, lw, lh);
   }
   return image;
 }
