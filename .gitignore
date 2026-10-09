@@ -1,0 +1,10 @@
+node_modules
+dist
+.DS_Store
+*.log
+# Raw KayKit packs (full downloads); the files the game needs are copied into assets-src/
+_packs/
+# Captured footage and exports
+social/
+# Raw pack downloads
+*.zip

@@ -1,0 +1,31 @@
+{
+  "name": "gigantic-gourd",
+  "version": "0.1.0",
+  "description": "Gigantic Gourd: a katamari-style Halloween web game by Gigantic.",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:site": "vite build --base=/halloween/",
+    "preview": "vite preview",
+    "assets": "node tools/build-assets.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.5.1",
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "@types/three": "^0.186.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  }
+}
